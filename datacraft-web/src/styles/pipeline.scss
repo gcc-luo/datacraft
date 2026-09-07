@@ -30,3 +30,17 @@
 @media (max-width: 1050px) { .pipeline-editor-page { margin-left: -25px; margin-right: -25px; }.pipeline-palette { min-width: 205px; }.pipeline-inspector { min-width: 245px; } }
 @media (max-width: 800px) { .pipeline-editor-page { min-height: calc(100vh - 90px); margin: -27px -20px; grid-template-rows: auto minmax(430px, 1fr); }.pipeline-editor__toolbar { flex-wrap: wrap; gap: 12px; min-height: 115px; padding: 14px 16px; }.pipeline-editor__identity { order: 2; width: calc(100% - 48px); flex-basis: calc(100% - 48px); }.pipeline-editor__state { order: 3; margin-left: 47px; }.pipeline-editor__actions { order: 4; margin-left: auto; }.pipeline-editor-page > .pipeline-palette { grid-row: 2; }.pipeline-editor-page > .pipeline-canvas { grid-row: 3; min-height: 440px; }.pipeline-editor-page > .pipeline-inspector { grid-row: 4; min-height: 350px; }.pipeline-editor-page { grid-template-rows: 115px auto auto auto; }.pipeline-palette { border-right: 0; border-bottom: 1px solid var(--editor-line); }.pipeline-palette__groups { display: flex; gap: 12px; overflow-x: auto; }.pipeline-palette__group { min-width: 195px; margin-bottom: 0; }.pipeline-palette__hint { display: none; }.pipeline-table { min-width: 780px; }.pipeline-list-card { overflow-x: auto; } }
 @media (prefers-reduced-motion: reduce) { .pipeline-palette__item, .pipeline-node { transition: none; } }
+
+/* The editor is a two-row grid: toolbar across the top, workspace panels below. */
+.pipeline-editor__toolbar { grid-column: 1 / -1; grid-row: 1; }
+.pipeline-palette { grid-column: 1; grid-row: 2; }
+.pipeline-canvas { grid-column: 2; grid-row: 2; }
+.pipeline-inspector { grid-column: 3; grid-row: 2; }
+
+@media (max-width: 800px) {
+  .pipeline-editor-page { grid-template-columns: minmax(0, 1fr); }
+  .pipeline-editor__toolbar { grid-column: 1; grid-row: 1; }
+  .pipeline-editor-page > .pipeline-palette { grid-column: 1; grid-row: 2; }
+  .pipeline-editor-page > .pipeline-canvas { grid-column: 1; grid-row: 3; }
+  .pipeline-editor-page > .pipeline-inspector { grid-column: 1; grid-row: 4; }
+}
