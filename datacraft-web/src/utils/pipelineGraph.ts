@@ -1,10 +1,11 @@
-import type { Edge, Node } from '@vue-flow/core'
+import type { Edge } from '@vue-flow/core'
 import type {
   PipelineCanvasEdge,
   PipelineCanvasNode,
   PipelineDetailResponse,
   PipelineEdgeRequest,
   PipelineNodeRequest,
+  PipelineNodeData,
   PipelineRequest,
   PipelineStatus,
   ExecutionStrategy,
@@ -43,13 +44,13 @@ export function detailToCanvas(detail: PipelineDetailResponse): PipelineCanvasGr
 export function canvasToRequest(name: string, description: string | null, status: PipelineStatus,
                                 executionStrategy: ExecutionStrategy, nodes: PipelineCanvasNode[], edges: Edge[]): PipelineRequest {
   const nodeRequests: PipelineNodeRequest[] = nodes.map((node) => ({
-    nodeKey: node.data.nodeKey,
-    nodeType: node.data.nodeType,
-    nodeName: node.data.nodeName,
+    nodeKey: (node.data as PipelineNodeData).nodeKey,
+    nodeType: (node.data as PipelineNodeData).nodeType,
+    nodeName: (node.data as PipelineNodeData).nodeName,
     x: node.position.x,
     y: node.position.y,
-    configJson: node.data.configJson,
-    preferredEngine: node.data.preferredEngine,
+    configJson: (node.data as PipelineNodeData).configJson,
+    preferredEngine: (node.data as PipelineNodeData).preferredEngine,
   }))
   const edgeRequests: PipelineEdgeRequest[] = edges.map((edge) => ({
     sourceNodeKey: edge.source,

@@ -7,6 +7,7 @@ describe('PipelineNode', () => {
   it('renders node identity, engine preference and handles', () => {
     const wrapper = mount(PipelineNode, {
       props: {
+        id: 'source', type: 'pipeline', selected: false, connectable: true, position: { x: 0, y: 0 }, dimensions: { width: 180, height: 80 }, dragging: false, resizing: false, zIndex: 0, events: {} as any,
         data: {
           nodeKey: 'source', nodeType: 'DATABASE_SOURCE', nodeName: 'Customer DB', configJson: '{}', preferredEngine: 'NATIVE',
           metadata: { type: 'DATABASE_SOURCE', name: 'Database Source', category: 'SOURCE', icon: 'database', supportedEngines: ['NATIVE'], defaultEngine: 'NATIVE', configSchema: {} },

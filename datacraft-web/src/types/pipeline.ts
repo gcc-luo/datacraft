@@ -86,5 +86,9 @@ export interface PipelineNodeData {
   metadata?: NodeMetadataResponse
 }
 
+export interface PipelineNodePatch extends Partial<PipelineNodeData> {
+  position?: { x: number; y: number }
+}
+
 export type PipelineCanvasNode = Node<PipelineNodeData>
 export type PipelineCanvasEdge = Edge

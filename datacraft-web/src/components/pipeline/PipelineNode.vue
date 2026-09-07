@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
 import type { NodeCategory, PipelineNodeData } from '../../types/pipeline'
+import type { NodeProps } from '@vue-flow/core'
 
-const props = defineProps<{ data: PipelineNodeData }>()
+const props = defineProps<NodeProps<PipelineNodeData>>()
 
 const categoryLabels: Record<NodeCategory, string> = {
   SOURCE: 'SOURCE', TRANSFORM: 'TRANSFORM', QUALITY: 'QUALITY', GOVERNANCE: 'GOVERNANCE', SINK: 'SINK', UTILITY: 'UTILITY',
