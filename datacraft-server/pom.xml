@@ -11,6 +11,7 @@
         <module>datacraft-datasource</module>
         <module>datacraft-metadata</module>
         <module>datacraft-pipeline</module>
+        <module>datacraft-execution</module>
         <module>datacraft-bootstrap</module>
     </modules>
 </project>

@@ -4,7 +4,7 @@
 V0.4
 
 ## Current Phase
-Phase 5 — Pipeline Editor (Completed)
+Phase 7 — Execution Planner (Completed)
 
 ## Repository State
 Initialized modular monolith with datasource management, database metadata browsing, Pipeline control-plane modeling, and a Vue Flow editor; backend, frontend, infrastructure, and CI builds are ready.
@@ -56,17 +56,33 @@ Initialized modular monolith with datasource management, database metadata brows
 - Three-column Pipeline editor with drag/drop nodes, DAG connections, save, update, delete, and dirty-state feedback
 - Phase 5 frontend component/view tests and production build
 - Chinese Git commit convention documented in AGENTS.md
+- Standalone `datacraft-execution` module wired into the Maven reactor and bootstrap application
+- ExecutionEngine SPI with engine metadata, capability declaration, and health contract
+- EngineRegistry with stable ordering, duplicate protection, and unknown-engine validation
+- Built-in Native engine registration with embedded deployment metadata and loaded health status
+- Authenticated engine discovery API at `GET /api/v1/engines`
+- Phase 6 backend tests and full Maven test verification
+- Immutable `ExecutionPlan`, `ExecutionStagePlan`, and `DataReference` models
+- Deterministic Pipeline DAG topological planning with engine selection precedence
+- Engine capability and registry validation during planning
+- Database source/sink table references without credential exposure
+- Cross-stage logical query references marked `MATERIALIZATION_REQUIRED`
+- Phase 7 planner tests and full Maven test verification
+- Controlled JDBC connection provider port with transient credential decryption
+- Native JDBC source/filter/sink runtime for linear database pipelines
+- SQL filter pushdown, database-aware identifier quoting, and positional field mapping
+- Bounded forward-only reads and 500-row PreparedStatement batches without full-result `List`
+- APPEND/TRUNCATE sink modes with transactional commit, rollback, and auto-commit restoration
+- Phase 8 Native Runtime design, tests, and Maven verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 6 — Native Execution
-- Add execution planning and the first native engine path while preserving the control-plane / execution-plane boundary
+- Phase 9 — Quality
+- Add Quality Node, QualityResult, sampling, rule execution, and quality report capabilities
 
 ## Not Started
-- Native Execution
-- Execution Planner
 - Quality
 - Scheduler
 - DataX
