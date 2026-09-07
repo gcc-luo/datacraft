@@ -14,6 +14,7 @@
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-api</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-common</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-pipeline</artifactId><version>${project.version}</version></dependency>
+        <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-datasource</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
         <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
