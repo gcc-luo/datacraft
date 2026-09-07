@@ -35,7 +35,8 @@ button { cursor: pointer; }
 .app-nav__item { display: flex; align-items: center; gap: 12px; min-height: 43px; padding: 0 12px; border-radius: 8px; color: #aebddd; font-size: 13px; text-decoration: none; transition: background .2s, color .2s; }
 .app-nav__item:hover { color: #fff; background: rgb(255 255 255 / 7%); }
 .app-nav__item.is-active { color: #fff; background: #345fd0; box-shadow: 0 5px 14px rgb(7 22 61 / 24%); }
-.app-nav__icon { display: grid; width: 20px; place-items: center; color: #b7c9ff; font-size: 12px; font-weight: 800; }
+.app-nav__icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; color: #b7c9ff; }
+.app-nav__icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .sidebar-toggle { width: 100%; margin-top: auto; padding: 9px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 7px; color: #aebddd; background: transparent; }
 .app-main { min-width: 0; flex: 1; }
 .app-header { display: flex; justify-content: space-between; align-items: center; min-height: 90px; padding: 0 clamp(25px, 4vw, 62px); border-bottom: 1px solid #e7eaf2; background: #fff; }
