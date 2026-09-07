@@ -11,6 +11,7 @@
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-metadata</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-pipeline</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-execution</artifactId><version>${project.version}</version></dependency>
+        <dependency><groupId>io.datacraft</groupId><artifactId>datacraft-quality</artifactId><version>${project.version}</version></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
         <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>

@@ -1,10 +1,10 @@
 # DataCraft Development Progress
 
 ## Current Version
-V0.4
+V0.6
 
 ## Current Phase
-Phase 7 — Execution Planner (Completed)
+Phase 9 — Quality (Completed)
 
 ## Repository State
 Initialized modular monolith with datasource management, database metadata browsing, Pipeline control-plane modeling, and a Vue Flow editor; backend, frontend, infrastructure, and CI builds are ready.
@@ -74,16 +74,24 @@ Initialized modular monolith with datasource management, database metadata brows
 - Bounded forward-only reads and 500-row PreparedStatement batches without full-result `List`
 - APPEND/TRUNCATE sink modes with transactional commit, rollback, and auto-commit restoration
 - Phase 8 Native Runtime design, tests, and Maven verification
+- Standalone `datacraft-quality` module wired into the Maven reactor and bootstrap application
+- PostgreSQL-backed `dc_quality_result` and `dc_quality_sample` tables with cascade cleanup and lookup indexes
+- Unified NULL, UNIQUE, RANGE, REGEX, LENGTH, ENUM, and CUSTOM SQL quality rule registry
+- MySQL/PostgreSQL identifier quoting, regex dialects, custom SQL safety validation, and parameter binding
+- JDBC table-level quality checks with total/error/pass/passRate metrics and at most 1000 persisted error samples
+- Authenticated quality check and result APIs at `/api/v1/quality/checks` and `/api/v1/quality/results`
+- Quality result page with quick NULL check, metrics, status, and error sample display
+- Quality node metadata registered for Native Pipeline editor support
+- Phase 9 quality backend and frontend tests and production build verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 9 — Quality
-- Add Quality Node, QualityResult, sampling, rule execution, and quality report capabilities
+- Phase 10 — Scheduler
+- Add Quartz scheduling, Cron configuration, execution history, retry/cancel, and audit log capabilities
 
 ## Not Started
-- Quality
 - Scheduler
 - DataX
 - Camel

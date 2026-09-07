@@ -14,6 +14,7 @@ const router = createRouter({
         { path: 'assets', name: 'assets', component: () => import('../views/AssetListView.vue') },
         { path: 'pipelines', name: 'pipelines', component: () => import('../views/PipelineListView.vue') },
         { path: 'pipelines/:id', name: 'pipeline-editor', component: () => import('../views/PipelineEditorView.vue') },
+        { path: 'quality', name: 'quality', component: () => import('../views/QualityView.vue') },
         { path: ':catchAll(.*)', name: 'placeholder', component: () => import('../views/PlaceholderView.vue') },
       ],
     },
