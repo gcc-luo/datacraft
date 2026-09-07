@@ -4,7 +4,7 @@
 V0.4
 
 ## Current Phase
-Phase 5 — Pipeline Editor (Completed)
+Phase 6 — Engine API (Completed)
 
 ## Repository State
 Initialized modular monolith with datasource management, database metadata browsing, Pipeline control-plane modeling, and a Vue Flow editor; backend, frontend, infrastructure, and CI builds are ready.
@@ -56,17 +56,23 @@ Initialized modular monolith with datasource management, database metadata brows
 - Three-column Pipeline editor with drag/drop nodes, DAG connections, save, update, delete, and dirty-state feedback
 - Phase 5 frontend component/view tests and production build
 - Chinese Git commit convention documented in AGENTS.md
+- Standalone `datacraft-execution` module wired into the Maven reactor and bootstrap application
+- ExecutionEngine SPI with engine metadata, capability declaration, and health contract
+- EngineRegistry with stable ordering, duplicate protection, and unknown-engine validation
+- Built-in Native engine registration with embedded deployment metadata and loaded health status
+- Authenticated engine discovery API at `GET /api/v1/engines`
+- Phase 6 backend tests and full Maven test verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 6 — Native Execution
-- Add execution planning and the first native engine path while preserving the control-plane / execution-plane boundary
+- Phase 7 — Execution Planner
+- Add pipeline validation-to-plan conversion, stages, and DataReference while preserving the control-plane / execution-plane boundary
 
 ## Not Started
-- Native Execution
 - Execution Planner
+- Native Runtime
 - Quality
 - Scheduler
 - DataX
