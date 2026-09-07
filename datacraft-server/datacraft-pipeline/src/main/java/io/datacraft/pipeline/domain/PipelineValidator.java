@@ -1,6 +1,7 @@
 package io.datacraft.pipeline.domain;
 
 import io.datacraft.pipeline.application.PipelineValidationException;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+@Component
 public class PipelineValidator {
     public void validate(String name, List<PipelineNode> nodes, List<PipelineEdge> edges,
                          Set<String> knownNodeTypes) {

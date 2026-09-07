@@ -1,13 +1,13 @@
 # DataCraft Development Progress
 
 ## Current Version
-V0.2
+V0.3
 
 ## Current Phase
-Phase 3 — Metadata (Completed)
+Phase 4 — Pipeline Model (Completed)
 
 ## Repository State
-Initialized modular monolith with datasource management and database metadata browsing; backend, frontend, infrastructure, and CI builds are ready.
+Initialized modular monolith with datasource management, database metadata browsing, and the Pipeline control-plane model; backend, frontend, infrastructure, and CI builds are ready.
 
 ## Completed
 - DESIGN.md prepared
@@ -41,16 +41,23 @@ Initialized modular monolith with datasource management and database metadata br
 - Metadata sync, dataset list/filter, and dataset detail REST APIs with authenticated access
 - Asset catalog UI with datasource selector, schema/table split view, breadcrumb detail view, field search, and sync action
 - Phase 3 backend and frontend unit/component tests and production builds
+- Standalone `datacraft-pipeline` module wired into the Maven reactor and bootstrap application
+- PostgreSQL-backed `dc_pipeline`, `dc_pipeline_node`, and `dc_pipeline_edge` graph tables with cascade relationships and graph snapshots
+- Pipeline domain model, immutable API DTOs, status/version/execution-strategy fields, and graph persistence boundary
+- Built-in `DATABASE_SOURCE`, `FILTER`, and `DATABASE_SINK` NodeMetadata definitions through a metadata-only NodeRegistry
+- Pipeline name, node-key, node-type, dangling-edge, duplicate-edge, self-loop, and DAG cycle validation
+- Authenticated Pipeline CRUD and NodeMetadata REST APIs with stable validation/not-found error codes
+- Phase 4 backend unit, persistence mapping, migration, application-service, and MVC tests
 
 ## In Progress
 - None
 
 ## Next
-- Phase 4 — Pipeline Model
-- Implement Pipeline, Node, Edge, NodeMetadata, and NodeRegistry foundations
+- Phase 5 — Pipeline Editor
+- Build the Vue Flow-based visual Pipeline editor on top of the Phase 4 APIs
 
 ## Not Started
-- Pipeline
+- Pipeline Editor
 - Quality
 - Scheduler
 - DataX
