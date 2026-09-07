@@ -12,9 +12,11 @@ class NodeRegistryTest {
 
     @Test
     void exposesMetadataOnlyBuiltInNodeTypes() {
-        assertEquals(3, registry.list().size());
+        assertEquals(10, registry.list().size());
         assertEquals(NodeCategory.SOURCE, registry.get("DATABASE_SOURCE").category());
         assertEquals(NodeCategory.TRANSFORM, registry.get("FILTER").category());
+        assertEquals(NodeCategory.QUALITY, registry.get("NULL_CHECK").category());
+        assertEquals(NodeCategory.QUALITY, registry.get("CUSTOM_SQL_CHECK").category());
         assertEquals(NodeCategory.SINK, registry.get("DATABASE_SINK").category());
         assertTrue(registry.get("DATABASE_SOURCE").supportedEngines().contains("NATIVE"));
     }

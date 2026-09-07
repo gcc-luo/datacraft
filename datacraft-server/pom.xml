@@ -13,6 +13,7 @@
         <module>datacraft-pipeline</module>
         <module>datacraft-engine-api</module>
         <module>datacraft-engine-native</module>
+        <module>datacraft-quality</module>
         <module>datacraft-bootstrap</module>
     </modules>
 </project>

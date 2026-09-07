@@ -1,10 +1,10 @@
 # DataCraft Development Progress
 
 ## Current Version
-V0.4
+V0.6
 
 ## Current Phase
-Phase 8 — Architecture Compliance Refactor (Completed)
+Phase 9 — Quality (Completed)
 
 ## Repository State
 Modular monolith with datasource management, metadata browsing, Pipeline modeling, Vue Flow editor, Native execution engine, and SPI-based engine architecture; Java package namespace unified to com.datacraft, execution module split into engine-api and engine-native, Pipeline and Engine management APIs completed.
@@ -80,16 +80,24 @@ Modular monolith with datasource management, metadata browsing, Pipeline modelin
 - MySQL test container added to Docker Compose for metadata and Pipeline source testing
 - Core ADR documents created: 0001-modular-monolith, 0002-engine-spi, 0003-datareference, 0004-datax-local-process, 0005-camel-embedded
 - Full Maven test verification: 82 tests, 0 failures, 0 errors
+- Standalone `datacraft-quality` module wired into the Maven reactor and bootstrap application
+- PostgreSQL-backed `dc_quality_result` and `dc_quality_sample` tables with cascade cleanup and lookup indexes
+- Unified NULL, UNIQUE, RANGE, REGEX, LENGTH, ENUM, and CUSTOM SQL quality rule registry
+- MySQL/PostgreSQL identifier quoting, regex dialects, custom SQL safety validation, and parameter binding
+- JDBC table-level quality checks with total/error/pass/passRate metrics and at most 1000 persisted error samples
+- Authenticated quality check and result APIs at `/api/v1/quality/checks` and `/api/v1/quality/results`
+- Quality result page with quick NULL check, metrics, status, and error sample display
+- Quality node metadata registered for Native Pipeline editor support
+- Phase 9 quality backend and frontend tests and production build verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 9 — Quality
-- Add Quality Node, QualityResult, sampling, rule execution, and quality report capabilities
+- Phase 10 — Scheduler
+- Add Quartz scheduling, Cron configuration, execution history, retry/cancel, and audit log capabilities
 
 ## Not Started
-- Quality
 - Scheduler
 - DataX
 - Camel

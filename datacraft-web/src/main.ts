@@ -6,6 +6,7 @@ import App from './App.vue'
 import router from './router'
 import './styles/main.scss'
 import './styles/pipeline.scss'
+import './styles/quality.scss'
 
 import { pinia } from './stores/pinia'
 
