@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { createDatasource, deleteDatasource, listDatasources, testDatasource, updateDatasource } from '../api/datasources'
+import PaginationBar from '../components/common/PaginationBar.vue'
+import { usePagination } from '../composables/usePagination'
 import type { DatasourceRequest, DatasourceResponse, DatasourceTestResponse, DatasourceType } from '../types/datasource'
 
 type DatasourceForm = DatasourceRequest
@@ -20,6 +22,7 @@ const formTestResult = ref<DatasourceTestResponse | null>(null)
 const testedFormSignature = ref('')
 const formElement = ref<HTMLFormElement | null>(null)
 const form = reactive<DatasourceForm>(emptyForm())
+const pagination = usePagination(rows)
 
 function emptyForm(): DatasourceForm {
   return { name: '', type: 'POSTGRESQL', host: '', port: 5432, databaseName: '', username: '', password: '', remark: '' }
@@ -182,7 +185,7 @@ onMounted(loadRows)
       <table v-else class="datasource-table">
         <thead><tr><th>名称</th><th>类型</th><th>地址</th><th>数据库</th><th>状态</th><th>最后测试</th><th>操作</th></tr></thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.id">
+          <tr v-for="row in pagination.paginatedItems.value" :key="row.id">
             <td><strong>{{ row.name }}</strong><small>{{ row.username }}</small></td>
             <td><span class="type-badge">{{ typeLabel(row.type) }}</span></td>
             <td>{{ row.host }}:{{ row.port }}</td>
@@ -193,6 +196,13 @@ onMounted(loadRows)
           </tr>
         </tbody>
       </table>
+      <PaginationBar
+        :current-page="pagination.currentPage.value"
+        :page-size="pagination.pageSize.value"
+        :total="pagination.total.value"
+        @update:current-page="pagination.setPage"
+        @update:page-size="pagination.setPageSize"
+      />
     </section>
 
     <section v-if="rowTestResult" class="test-result" :class="{ 'test-result--failed': !rowTestResult.success }"><strong>{{ rowTestResult.message }}</strong><span v-if="rowTestResult.success">耗时 {{ rowTestResult.latencyMs }} ms</span></section>

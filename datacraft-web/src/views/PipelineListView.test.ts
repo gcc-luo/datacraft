@@ -44,6 +44,7 @@ describe('PipelineListView', () => {
     expect(wrapper.text()).toContain('草稿')
     expect(wrapper.text()).toContain('v3')
     expect(wrapper.find('a[href="/pipelines/7"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="pagination-bar"]').exists()).toBe(true)
   })
 
   it('navigates to a new pipeline editor', async () => {

@@ -16,11 +16,21 @@ const menuIconPaths: Record<string, string[]> = {
   check: ['m5 12 4 4L19 6', 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z'],
   clock: ['M12 7v5l3 2', 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'],
   settings: ['M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z', 'm19.4 15 .1.1a2 2 0 1 1-2.8 2.8l-.1-.1a2 2 0 0 0-3.4 1.4v.3a2 2 0 1 1-4 0v-.2a2 2 0 0 0-3.4-1.5l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A2 2 0 0 0 4.4 12a2 2 0 0 0-1.4-1.9 2 2 0 1 1 1.5-3.7l.1.1A2 2 0 0 0 8 5.1a2 2 0 0 0 1-2.6 2 2 0 1 1 3.8 0 2 2 0 0 0 1 2.6 2 2 0 0 0 3.4 1.4l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A2 2 0 0 0 19.6 10a2 2 0 0 0 1.4 1.9 2 2 0 1 1-1.5 3.7l-.1-.1Z'],
+  users: ['M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20', 'M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z', 'M16 4.5a3.5 3.5 0 0 1 0 6.8', 'M20 20v-1.5a3.5 3.5 0 0 0-2.5-3.35'],
+  shield: ['M12 3 20 6v5c0 4.7-3.2 8.4-8 10-4.8-1.6-8-5.3-8-10V6l8-3Z', 'm8.5 12 2.2 2.2 4.8-5'],
   menu: ['M5 7h14', 'M5 12h14', 'M5 17h14'],
 }
 
 function menuIcon(item: { code: string; icon?: string }) {
   return menuIconPaths[item.icon || item.code] || menuIconPaths.menu
+}
+
+function isActive(item: { path: string }) {
+  return route.path === item.path || (item.path !== '/' && route.path.startsWith(`${item.path}/`))
+}
+
+function openMenu(item: { children: { path: string }[]; path: string }) {
+  void router.push(item.children[0]?.path || item.path)
 }
 
 function logout() {
@@ -34,14 +44,24 @@ function logout() {
     <aside class="app-sidebar">
       <div class="brand"><span class="brand__mark">D</span><span v-if="!collapsed" class="brand__name">DataCraft</span></div>
       <nav class="app-nav" aria-label="主导航">
-        <RouterLink v-for="item in auth.menuTree" :key="item.code" class="app-nav__item" :class="{ 'is-active': route.path === item.path }" :to="item.path">
-          <span class="app-nav__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path v-for="path in menuIcon(item)" :key="path" :d="path" />
-            </svg>
-          </span>
-          <span v-if="!collapsed">{{ item.title }}</span>
-        </RouterLink>
+        <template v-for="item in auth.menuTree" :key="item.code">
+          <div v-if="item.children?.length" class="app-nav__group" :class="{ 'is-active': isActive(item) }">
+            <button class="app-nav__item app-nav__item--parent" :class="{ 'is-active': isActive(item) }" type="button" :data-testid="`nav-${item.code}`" :aria-expanded="!collapsed" @click="openMenu(item)">
+              <span class="app-nav__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path v-for="path in menuIcon(item)" :key="path" :d="path" /></svg></span>
+              <span v-if="!collapsed" class="app-nav__label">{{ item.title }}</span>
+              <span v-if="!collapsed" class="app-nav__chevron" aria-hidden="true">⌄</span>
+            </button>
+            <div v-if="!collapsed" class="app-nav__children">
+              <RouterLink v-for="child in item.children" :key="child.code" class="app-nav__item app-nav__item--child" :class="{ 'is-active': route.path === child.path }" :data-testid="`nav-${child.code}`" :to="child.path">
+                <span class="app-nav__child-marker" aria-hidden="true"></span><span>{{ child.title }}</span>
+              </RouterLink>
+            </div>
+          </div>
+          <RouterLink v-else class="app-nav__item" :class="{ 'is-active': isActive(item) }" :data-testid="`nav-${item.code}`" :to="item.path">
+            <span class="app-nav__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path v-for="path in menuIcon(item)" :key="path" :d="path" /></svg></span>
+            <span v-if="!collapsed">{{ item.title }}</span>
+          </RouterLink>
+        </template>
       </nav>
       <button class="sidebar-toggle" type="button" @click="collapsed = !collapsed">{{ collapsed ? '→' : '←' }}</button>
     </aside>

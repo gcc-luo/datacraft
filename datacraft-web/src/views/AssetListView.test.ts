@@ -54,6 +54,7 @@ describe('AssetListView', () => {
     expect(wrapper.text()).toContain('public')
     expect(wrapper.text()).toContain('email')
     expect(wrapper.text()).toContain('VARCHAR(255)')
+    expect(wrapper.findAll('[data-testid="pagination-bar"]')).toHaveLength(2)
     expect(wrapper.text()).not.toContain('password_ciphertext')
   })
 

@@ -11,6 +11,7 @@ import com.datacraft.execution.domain.ExecutionPlan;
 import com.datacraft.execution.domain.ExecutionStagePlan;
 import com.datacraft.pipeline.domain.Pipeline;
 import com.datacraft.pipeline.domain.PipelineNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -36,6 +37,7 @@ public class NativePipelineExecutor {
         this(planner, connections, new ObjectMapper());
     }
 
+    @Autowired
     public NativePipelineExecutor(ExecutionPlanner planner, JdbcConnectionProvider connections,
                                   ObjectMapper objectMapper) {
         this.planner = planner;

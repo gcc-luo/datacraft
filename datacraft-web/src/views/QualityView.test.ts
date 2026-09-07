@@ -37,6 +37,7 @@ describe('QualityView', () => {
     expect(wrapper.text()).toContain('100')
     expect(wrapper.text()).toContain('97.00%')
     expect(wrapper.text()).toContain('phone: null')
+    expect(wrapper.find('[data-testid="pagination-bar"]').exists()).toBe(true)
   })
 
   it('submits a null check and refreshes results', async () => {

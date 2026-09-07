@@ -31,7 +31,7 @@ function startDrag(event: DragEvent, item: NodeMetadataResponse) {
 
 <template>
   <aside class="pipeline-palette" aria-label="节点库">
-    <div class="pipeline-panel-kicker">NODE LIBRARY <span>{{ metadata.length }}</span></div>
+    <div class="pipeline-panel-kicker">节点库 <span>{{ metadata.length }}</span></div>
     <div class="pipeline-palette__heading"><h2>组件库</h2><p>拖入画布开始编排</p></div>
     <label class="pipeline-search"><span>⌕</span><input v-model="search" data-testid="palette-search" type="search" placeholder="搜索节点" /></label>
     <div class="pipeline-palette__groups">
@@ -45,6 +45,6 @@ function startDrag(event: DragEvent, item: NodeMetadataResponse) {
       </section>
       <div v-if="groups.length === 0" class="pipeline-palette__empty">没有匹配的节点</div>
     </div>
-    <div class="pipeline-palette__hint"><span>TIP</span><p>连线会在保存时由服务端校验 DAG 是否有环。</p></div>
+    <div class="pipeline-palette__hint"><span>提示</span><p>连线会在保存时由服务端校验 DAG 是否有环。</p></div>
   </aside>
 </template>

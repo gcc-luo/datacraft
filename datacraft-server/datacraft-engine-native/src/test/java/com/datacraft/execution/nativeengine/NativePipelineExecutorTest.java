@@ -16,8 +16,10 @@ import com.datacraft.pipeline.domain.Pipeline;
 import com.datacraft.pipeline.domain.PipelineEdge;
 import com.datacraft.pipeline.domain.PipelineNode;
 import com.datacraft.pipeline.domain.PipelineValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,6 +39,14 @@ class NativePipelineExecutorTest {
     private final NativePipelineExecutor executor = new NativePipelineExecutor(
             new ExecutionPlanner(new PipelineValidator(), new NodeRegistry(),
                     new EngineRegistry(List.of(new NativeExecutionEngine()))), connections);
+
+    @Test
+    void marksObjectMapperConstructorForSpringInjection() throws NoSuchMethodException {
+        Constructor<NativePipelineExecutor> constructor = NativePipelineExecutor.class
+                .getConstructor(ExecutionPlanner.class, JdbcConnectionProvider.class, com.fasterxml.jackson.databind.ObjectMapper.class);
+
+        assertThat(constructor.isAnnotationPresent(Autowired.class)).isTrue();
+    }
 
     @Test
     void streamsFilteredRowsFromMysqlToPostgresqlInBoundedBatches() throws Exception {

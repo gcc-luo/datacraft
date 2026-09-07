@@ -2,6 +2,8 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { deletePipeline, listPipelines } from '../api/pipelines'
+import PaginationBar from '../components/common/PaginationBar.vue'
+import { usePagination } from '../composables/usePagination'
 import type { PipelineResponse, PipelineStatus } from '../types/pipeline'
 
 const router = useRouter()
@@ -9,6 +11,7 @@ const rows = ref<PipelineResponse[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 const notice = ref('')
+const pagination = usePagination(rows)
 
 async function loadRows() {
   loading.value = true
@@ -66,7 +69,7 @@ onMounted(loadRows)
       <table v-else class="pipeline-table">
         <thead><tr><th>名称</th><th>状态</th><th>执行策略</th><th>版本</th><th>最后更新</th><th>操作</th></tr></thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.id">
+          <tr v-for="row in pagination.paginatedItems.value" :key="row.id">
             <td><RouterLink class="pipeline-table__name" :to="{ name: 'pipeline-editor', params: { id: row.id } }">{{ row.name }}</RouterLink><small>{{ row.description || '未填写描述' }}</small></td>
             <td><span class="pipeline-status" :class="`pipeline-status--${row.status.toLowerCase()}`"><i></i>{{ statusLabel(row.status) }}</span></td>
             <td><span class="pipeline-strategy">{{ row.executionStrategy }}</span></td>
@@ -76,6 +79,13 @@ onMounted(loadRows)
           </tr>
         </tbody>
       </table>
+      <PaginationBar
+        :current-page="pagination.currentPage.value"
+        :page-size="pagination.pageSize.value"
+        :total="pagination.total.value"
+        @update:current-page="pagination.setPage"
+        @update:page-size="pagination.setPageSize"
+      />
     </section>
   </div>
 </template>

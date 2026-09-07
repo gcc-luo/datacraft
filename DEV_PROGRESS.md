@@ -7,7 +7,7 @@ V0.6
 Phase 9 — Quality (Completed)
 
 ## Repository State
-Modular monolith with datasource management, metadata browsing, Pipeline modeling, Vue Flow editor, Native execution engine, and SPI-based engine architecture; Java package namespace unified to com.datacraft, execution module split into engine-api and engine-native, Pipeline and Engine management APIs completed.
+Modular monolith with system administration, datasource management, metadata browsing, Pipeline modeling, Vue Flow editor, Native execution engine, and SPI-based engine architecture; Java package namespace unified to com.datacraft, execution module split into engine-api and engine-native, Pipeline and Engine management APIs completed.
 
 ## Completed
 - DESIGN.md prepared
@@ -44,7 +44,8 @@ Modular monolith with datasource management, metadata browsing, Pipeline modelin
 - Standalone datacraft-pipeline module wired into the Maven reactor and bootstrap application
 - PostgreSQL-backed dc_pipeline, dc_pipeline_node, and dc_pipeline_edge graph tables with cascade relationships and graph snapshots
 - Pipeline domain model, immutable API DTOs, status/version/execution-strategy fields, and graph persistence boundary
-- Built-in DATABASE_SOURCE, FILTER, and DATABASE_SINK NodeMetadata definitions through a metadata-only NodeRegistry
+- Built-in 10-node metadata library through NodeRegistry: database source, filter, seven quality checks, and database sink
+- Pipeline component library labels localized to Chinese while preserving stable technical node type identifiers
 - Pipeline name, node-key, node-type, dangling-edge, duplicate-edge, self-loop, and DAG cycle validation
 - Authenticated Pipeline CRUD and NodeMetadata REST APIs with stable validation/not-found error codes
 - Phase 4 backend unit, persistence mapping, migration, application-service, and MVC tests
@@ -90,11 +91,20 @@ Modular monolith with datasource management, metadata browsing, Pipeline modelin
 - Quality node metadata registered for Native Pipeline editor support
 - Phase 9 quality backend and frontend tests and production build verification
 - Fixed NativePipelineExecutor Spring constructor injection and verified backend startup after rebuild
+- Added ADMIN-protected system management for users, roles, menus, role assignment, and role-menu authorization
+- Added nested system settings navigation with `/system/users`, `/system/roles`, and `/system/menus` routes
+- Added Flyway seed migration for system-management second-level menus and ADMIN menu grants
+- Kept password hashes out of system-management responses and reused existing auth tables
+- Removed redundant system-management page banner and ADMIN description from user, role, and menu views
+- Converted user, role, and menu create/edit forms to modal dialogs with overlay close and responsive panels
 - Replaced sidebar menu initial-letter placeholders with semantic SVG icons and a generic fallback icon
 - Datasource create/edit moved into modal form with unsaved configuration testing and save gating
 - Added temporary datasource connection-test APIs, edit password reuse, and frontend regression coverage
 - Added shared frontend readability baseline with system font fallback, clearer contrast, and larger UI text
 - Increased datasource and Pipeline list header text to 12px for clearer scanning
+- Added shared frontend pagination for datasource, asset/table fields, Pipeline, quality, and system user/role/menu lists
+- Added page-size switching, boundary-safe page navigation, and reset-to-first-page behavior after asset filtering or selection changes
+- Verified frontend with 35 Vitest tests and a successful production build
 
 ## In Progress
 - None

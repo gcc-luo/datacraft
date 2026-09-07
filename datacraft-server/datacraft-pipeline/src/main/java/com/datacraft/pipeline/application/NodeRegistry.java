@@ -16,25 +16,25 @@ public class NodeRegistry {
 
     public NodeRegistry() {
         List<NodeMetadata> builtIns = List.of(
-                new NodeMetadata("DATABASE_SOURCE", "Database Source", NodeCategory.SOURCE, "database",
+                new NodeMetadata("DATABASE_SOURCE", "数据库源", NodeCategory.SOURCE, "database",
                         List.of("NATIVE", "DATAX"), "NATIVE", schema("datasourceId", "tableName")),
-                new NodeMetadata("FILTER", "Filter", NodeCategory.TRANSFORM, "filter",
+                new NodeMetadata("FILTER", "数据筛选", NodeCategory.TRANSFORM, "filter",
                         List.of("NATIVE"), "NATIVE", schema("expression")),
-                new NodeMetadata("NULL_CHECK", "Null Check", NodeCategory.QUALITY, "quality-null",
+                new NodeMetadata("NULL_CHECK", "空值检查", NodeCategory.QUALITY, "quality-null",
                         List.of("NATIVE"), "NATIVE", schema("field")),
-                new NodeMetadata("UNIQUE_CHECK", "Unique Check", NodeCategory.QUALITY, "quality-unique",
+                new NodeMetadata("UNIQUE_CHECK", "唯一性检查", NodeCategory.QUALITY, "quality-unique",
                         List.of("NATIVE"), "NATIVE", schema("field")),
-                new NodeMetadata("RANGE_CHECK", "Range Check", NodeCategory.QUALITY, "quality-range",
+                new NodeMetadata("RANGE_CHECK", "范围检查", NodeCategory.QUALITY, "quality-range",
                         List.of("NATIVE"), "NATIVE", schema("field", "min", "max")),
-                new NodeMetadata("REGEX_CHECK", "Regex Check", NodeCategory.QUALITY, "quality-regex",
+                new NodeMetadata("REGEX_CHECK", "正则检查", NodeCategory.QUALITY, "quality-regex",
                         List.of("NATIVE"), "NATIVE", schema("field", "regex")),
-                new NodeMetadata("LENGTH_CHECK", "Length Check", NodeCategory.QUALITY, "quality-length",
+                new NodeMetadata("LENGTH_CHECK", "长度检查", NodeCategory.QUALITY, "quality-length",
                         List.of("NATIVE"), "NATIVE", schema("field", "minLength", "maxLength")),
-                new NodeMetadata("ENUM_CHECK", "Enum Check", NodeCategory.QUALITY, "quality-enum",
+                new NodeMetadata("ENUM_CHECK", "枚举检查", NodeCategory.QUALITY, "quality-enum",
                         List.of("NATIVE"), "NATIVE", schema("field", "values")),
-                new NodeMetadata("CUSTOM_SQL_CHECK", "Custom SQL Check", NodeCategory.QUALITY, "quality-sql",
+                new NodeMetadata("CUSTOM_SQL_CHECK", "自定义 SQL 检查", NodeCategory.QUALITY, "quality-sql",
                         List.of("NATIVE"), "NATIVE", schema("condition")),
-                new NodeMetadata("DATABASE_SINK", "Database Sink", NodeCategory.SINK, "database",
+                new NodeMetadata("DATABASE_SINK", "数据库输出", NodeCategory.SINK, "database",
                         List.of("NATIVE", "DATAX"), "NATIVE", schema("datasourceId", "tableName", "writeMode"))
         );
         metadataByType = builtIns.stream().collect(Collectors.toUnmodifiableMap(NodeMetadata::type, value -> value));

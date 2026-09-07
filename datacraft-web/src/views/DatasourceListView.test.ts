@@ -50,6 +50,7 @@ describe('DatasourceListView', () => {
     await vi.waitFor(() => expect(wrapper.text()).toContain('warehouse'))
 
     expect(wrapper.text()).toContain('PostgreSQL')
+    expect(wrapper.find('[data-testid="pagination-bar"]').exists()).toBe(true)
     expect(wrapper.find('input[name="password"]').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('password_ciphertext')
   })

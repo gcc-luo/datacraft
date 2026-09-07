@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils'
 import PipelineInspector from './PipelineInspector.vue'
 
 const metadata = [
-  { type: 'DATABASE_SOURCE', name: 'Database Source', category: 'SOURCE' as const, icon: 'database', supportedEngines: ['NATIVE', 'DATAX'], defaultEngine: 'NATIVE', configSchema: {} },
+  { type: 'DATABASE_SOURCE', name: '数据库源', category: 'SOURCE' as const, icon: 'database', supportedEngines: ['NATIVE', 'DATAX'], defaultEngine: 'NATIVE', configSchema: {} },
 ]
 
 const pipeline = { name: 'Daily Orders', description: 'Sync orders', status: 'DRAFT' as const, executionStrategy: 'AUTO' as const }
