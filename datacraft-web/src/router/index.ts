@@ -11,6 +11,7 @@ const router = createRouter({
       children: [
         { path: '', name: 'home', component: () => import('../views/HomeView.vue') },
         { path: 'datasources', name: 'datasources', component: () => import('../views/DatasourceListView.vue') },
+        { path: 'assets', name: 'assets', component: () => import('../views/AssetListView.vue') },
         { path: ':catchAll(.*)', name: 'placeholder', component: () => import('../views/PlaceholderView.vue') },
       ],
     },

@@ -1,13 +1,13 @@
 # DataCraft Development Progress
 
 ## Current Version
-V0.1
+V0.2
 
 ## Current Phase
-Phase 2 — Datasource (Completed)
+Phase 3 — Metadata (Completed)
 
 ## Repository State
-Initialized modular monolith with the Phase 2 datasource management shell; backend, frontend, infrastructure, and CI builds are ready.
+Initialized modular monolith with datasource management and database metadata browsing; backend, frontend, infrastructure, and CI builds are ready.
 
 ## Completed
 - DESIGN.md prepared
@@ -34,16 +34,22 @@ Initialized modular monolith with the Phase 2 datasource management shell; backe
 - Datasource CRUD, safe test results, duplicate/not-found validation, and password-free API responses
 - Datasource console list/create/edit/test/delete workflow
 - Phase 2 backend and frontend unit/component tests, package build, and Docker smoke verification
+- Standalone `datacraft-metadata` module wired into the Maven reactor and bootstrap application
+- PostgreSQL-backed `dc_dataset` and `dc_dataset_field` schema with foreign-key cascade and lookup indexes
+- JDBC metadata collectors for PostgreSQL and MySQL tables, columns, primary keys, remarks, and estimated row counts
+- Transactional datasource snapshot replacement with password-free dataset/field API DTOs
+- Metadata sync, dataset list/filter, and dataset detail REST APIs with authenticated access
+- Asset catalog UI with datasource selector, schema/table split view, breadcrumb detail view, field search, and sync action
+- Phase 3 backend and frontend unit/component tests and production builds
 
 ## In Progress
 - None
 
 ## Next
-- Phase 3 — Metadata
-- Implement metadata collector, dataset/field model, and asset browsing UI
+- Phase 4 — Pipeline Model
+- Implement Pipeline, Node, Edge, NodeMetadata, and NodeRegistry foundations
 
 ## Not Started
-- Metadata
 - Pipeline
 - Quality
 - Scheduler

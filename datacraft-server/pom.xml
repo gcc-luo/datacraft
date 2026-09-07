@@ -9,6 +9,7 @@
         <module>datacraft-api</module>
         <module>datacraft-auth</module>
         <module>datacraft-datasource</module>
+        <module>datacraft-metadata</module>
         <module>datacraft-bootstrap</module>
     </modules>
 </project>

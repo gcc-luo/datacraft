@@ -1,6 +1,6 @@
 # DataCraft
 
-DataCraft 是一个通过可视化 Pipeline 统一编排多种数据处理引擎的数据集成与数据治理平台。当前已完成 V0.1 / Phase 2：平台认证、角色菜单、控制台框架和 JDBC 数据源管理。
+DataCraft 是一个通过可视化 Pipeline 统一编排多种数据处理引擎的数据集成与数据治理平台。当前已完成 V0.2 / Phase 3：平台认证、角色菜单、控制台框架、JDBC 数据源管理和数据库资产浏览。
 
 ## 环境要求
 
@@ -18,6 +18,7 @@ datacraft-server/
   datacraft-api/          HTTP API 边界模块
   datacraft-auth/         认证、JWT 和系统菜单
   datacraft-datasource/   JDBC 数据源、连接测试和凭据加密
+  datacraft-metadata/     PostgreSQL/MySQL 元数据采集和数据资产查询
   datacraft-bootstrap/    Spring Boot 启动模块
 datacraft-web/            Vue 3 前端
 docker/                   容器初始化资源
@@ -51,6 +52,16 @@ POST   /api/v1/datasources/{id}/test
 
 当前支持 PostgreSQL 和 MySQL。编辑数据源时密码留空表示保留原密码；任何 API 响应都不会返回密码或密文。
 
+Phase 3 元数据 API：
+
+```text
+POST /api/v1/datasources/{id}/metadata/sync
+GET  /api/v1/datasets?datasourceId=&schemaName=&keyword=
+GET  /api/v1/datasets/{id}
+```
+
+元数据同步使用 JDBC `DatabaseMetaData` 采集 Schema、Table、Field、主键和备注，并通过只读数据库方言查询获取估算行数。同步采用整库快照替换；当前仅支持 PostgreSQL 和 MySQL 的表结构元数据，不采集 View、Index、Constraint 等扩展对象。
+
 前端开发：
 
 ```shell
@@ -72,4 +83,4 @@ npm run build
 
 ## 当前边界
 
-Phase 2 已完成认证、角色菜单、登录态、系统 Layout 和数据源管理。元数据、Pipeline、质量、调度以及任何执行引擎将在后续 Phase 按 `DESIGN.md` 推进。
+Phase 3 已完成认证、角色菜单、登录态、系统 Layout、数据源管理和元数据资产浏览。下一阶段按 `DESIGN.md` 进入 Phase 4 Pipeline Model，先实现 Pipeline、Node、Edge、NodeMetadata 和 NodeRegistry，不提前接入执行引擎。
