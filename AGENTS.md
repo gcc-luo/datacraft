@@ -29,3 +29,23 @@ Frontend: Vue 3, TypeScript, Vite, Element Plus, Pinia, Vue Router, Vue Flow, Ax
 - 不删除测试来规避失败。
 - 不提前实现后续 Phase。
 - 每次任务结束必须构建、测试、更新 DEV_PROGRESS.md。
+
+## Git 提交规范
+- 使用 Conventional Commits 格式：`<type>(<scope>): <subject>`。
+- `type` 保留英文小写，允许：`feat`、`fix`、`docs`、`style`、`refactor`、`perf`、`test`、`chore`、`ci`、`revert`。
+- `scope` 使用中文模块名，可选，例如 `认证`、`Pipeline`、`数据源`、`前端`。
+- `subject` 使用中文动宾短语，不超过 50 个汉字，不以句号结尾；中文与英文/数字之间保留一个空格。
+- 提交正文使用中文，说明变更背景、技术方案和影响范围；每行不超过 72 个字符。
+- 一个提交只完成一项原子变更，避免把无关修改混在同一个提交中。
+- 涉及数据库结构、公共 API 或配置格式的不兼容变更，必须在 footer 标注 `BREAKING CHANGE`，并写明迁移或升级方法。
+- 有关联事项时，在 footer 使用 `Closes #123`、`Refs #123` 等方式关联 Issue。
+
+提交示例：
+
+```text
+feat(Pipeline): 添加 MySQL 到 PostgreSQL 的任务编排模型
+
+背景：需要支持跨数据库 Pipeline 的控制面配置。
+方案：新增源节点、目标节点及数据源引用配置。
+影响范围：Pipeline 模型、前端编辑器。
+```

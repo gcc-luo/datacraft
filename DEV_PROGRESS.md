@@ -55,6 +55,7 @@ Initialized modular monolith with datasource management, database metadata brows
 - Pipeline inspector for pipeline properties, node properties, engine preference, coordinates, and JSON validation
 - Three-column Pipeline editor with drag/drop nodes, DAG connections, save, update, delete, and dirty-state feedback
 - Phase 5 frontend component/view tests and production build
+- Chinese Git commit convention documented in AGENTS.md
 
 ## In Progress
 - None
