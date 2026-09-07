@@ -68,16 +68,21 @@ Initialized modular monolith with datasource management, database metadata brows
 - Database source/sink table references without credential exposure
 - Cross-stage logical query references marked `MATERIALIZATION_REQUIRED`
 - Phase 7 planner tests and full Maven test verification
+- Controlled JDBC connection provider port with transient credential decryption
+- Native JDBC source/filter/sink runtime for linear database pipelines
+- SQL filter pushdown, database-aware identifier quoting, and positional field mapping
+- Bounded forward-only reads and 500-row PreparedStatement batches without full-result `List`
+- APPEND/TRUNCATE sink modes with transactional commit, rollback, and auto-commit restoration
+- Phase 8 Native Runtime design, tests, and Maven verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 8 — Native Runtime
-- Add JDBC Source, Filter, SQL pushdown, mapping, and Sink execution while preserving the control-plane / execution-plane boundary
+- Phase 9 — Quality
+- Add Quality Node, QualityResult, sampling, rule execution, and quality report capabilities
 
 ## Not Started
-- Native Runtime
 - Quality
 - Scheduler
 - DataX
