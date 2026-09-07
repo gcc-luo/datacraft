@@ -1,4 +1,4 @@
-services:
+﻿services:
   postgres:
     image: postgres:17-alpine
     environment:
@@ -22,7 +22,21 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+  mysql-test:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_TEST_ROOT_PASSWORD:-datacraft}
+      MYSQL_DATABASE: ${MYSQL_TEST_DATABASE:-datacraft_test}
+      MYSQL_USER: ${MYSQL_TEST_USER:-datacraft}
+      MYSQL_PASSWORD: ${MYSQL_TEST_PASSWORD:-datacraft}
+    ports: ["${MYSQL_TEST_PORT:-3306}:3306"]
+    volumes: ["datacraft-mysql-test-data:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 volumes:
   datacraft-postgres-data:
   datacraft-redis-data:
-
+  datacraft-mysql-test-data:

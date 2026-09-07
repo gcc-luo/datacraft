@@ -3546,3 +3546,2226 @@ Execution Provider
 
 > 平台拥有统一体验，开源引擎只是底层能力提供者。
 
+
+---
+
+# 附录 A：Codex/Luna 可直接执行的工程规格（V3.0 增补）
+
+> 本附录把 V2 设计进一步细化为“可执行规格”。目标不是让模型一次性生成全部代码，而是让 Codex/Luna 在每个 Phase 中尽量减少自行猜测。
+
+## A.1 设计文档优先级
+
+AI 编程代理执行任何修改时，必须按以下优先级处理冲突：
+
+```text
+用户当前明确指令
+    >
+DESIGN.md
+    >
+AGENTS.md
+    >
+DEV_PROGRESS.md
+    >
+现有代码
+```
+
+如果现有代码与 DESIGN.md 冲突，不允许静默改变架构。先识别偏差，再在本阶段范围内向设计收敛；若需要大范围重构，先输出影响范围。
+
+## A.2 单次 Agent 执行标准流程
+
+每次开发必须严格执行：
+
+```text
+Read DESIGN.md
+↓
+Read AGENTS.md
+↓
+Read DEV_PROGRESS.md
+↓
+Check Git Status
+↓
+Confirm Version / Phase
+↓
+Output Implementation Plan
+↓
+Implement
+↓
+Run Tests / Build
+↓
+Fix
+↓
+Update DEV_PROGRESS.md
+↓
+Report
+```
+
+禁止只生成代码但不执行构建验证。
+
+## A.3 Definition of Done
+
+任何一个功能只有同时满足以下条件才算完成：
+
+```text
+代码完成
+API 完成
+数据库 Migration 完成
+输入校验完成
+异常处理完成
+权限检查完成
+关键日志完成
+单元测试完成
+构建通过
+必要文档更新
+DEV_PROGRESS.md 更新
+```
+
+---
+
+# 附录 B：后端工程结构详细约束
+
+## B.1 根工程
+
+```text
+datacraft/
+├── pom.xml
+├── datacraft-server/
+├── datacraft-web/
+├── DESIGN.md
+├── AGENTS.md
+├── DEV_PROGRESS.md
+├── README.md
+├── docker-compose.yml
+├── docs/
+├── scripts/
+├── docker/
+└── deploy/
+```
+
+## B.2 Maven 模块依赖方向
+
+推荐依赖方向：
+
+```text
+datacraft-bootstrap
+        ↓
+datacraft-api
+        ↓
+业务模块
+        ↓
+node-api / connector-api / engine-api
+        ↓
+datacraft-common
+```
+
+Engine 实现：
+
+```text
+datacraft-engine-native → datacraft-engine-api
+
+datacraft-engine-datax → datacraft-engine-api
+
+datacraft-engine-camel → datacraft-engine-api
+```
+
+严格禁止：
+
+```text
+datacraft-pipeline → datacraft-engine-datax
+
+datacraft-pipeline → datacraft-engine-camel
+```
+
+允许：
+
+```text
+datacraft-pipeline → datacraft-engine-api
+```
+
+## B.3 Java 包规范
+
+每个业务模块建议：
+
+```text
+com.datacraft.<module>
+├── controller
+├── service
+├── domain
+├── dto
+├── mapper
+├── repository
+├── converter
+├── exception
+└── internal
+```
+
+对于 pipeline：
+
+```text
+com.datacraft.pipeline
+├── controller
+├── service
+├── domain
+├── dto
+├── mapper
+├── validation
+├── planner
+├── execution
+└── event
+```
+
+对于 engine：
+
+```text
+com.datacraft.engine.api
+├── model
+├── spi
+└── exception
+```
+
+---
+
+# 附录 C：统一 API 规范
+
+## C.1 Base Path
+
+```text
+/api/v1
+```
+
+## C.2 统一响应
+
+```java
+public record ApiResponse<T>(
+    int code,
+    String message,
+    T data
+) {}
+```
+
+成功：
+
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {}
+}
+```
+
+错误：
+
+```json
+{
+  "code": 5001002,
+  "message": "Pipeline contains cycle",
+  "data": null
+}
+```
+
+## C.3 错误码范围
+
+```text
+100xxxx System
+200xxxx Authentication / Authorization
+300xxxx Datasource
+400xxxx Metadata
+500xxxx Pipeline
+600xxxx Execution
+700xxxx Quality
+800xxxx Scheduler
+900xxxx Engine
+```
+
+示例：
+
+```text
+3001001 Datasource not found
+3001002 Datasource connection failed
+4001001 Dataset not found
+5001001 Pipeline not found
+5001002 Pipeline contains cycle
+5001003 Invalid node configuration
+6001001 Execution not found
+6001002 Execution cannot be cancelled
+7001001 Quality result not found
+9001001 Engine not found
+9001002 Engine unavailable
+9001003 Engine does not support node
+```
+
+## C.4 分页
+
+请求：
+
+```text
+page=1
+pageSize=20
+```
+
+响应 data：
+
+```json
+{
+  "items": [],
+  "page": 1,
+  "pageSize": 20,
+  "total": 0
+}
+```
+
+---
+
+# 附录 D：数据库规范与核心 DDL
+
+## D.1 通用约束
+
+数据库固定 PostgreSQL。
+
+主键：
+
+```text
+BIGINT
+```
+
+由应用层生成：
+
+```text
+MyBatis-Plus ASSIGN_ID
+```
+
+时间字段：
+
+```text
+TIMESTAMPTZ
+```
+
+业务表默认：
+
+```text
+created_at
+updated_at
+```
+
+## D.2 用户表
+
+```sql
+CREATE TABLE dc_user (
+    id              BIGINT PRIMARY KEY,
+    username        VARCHAR(64) NOT NULL UNIQUE,
+    password_hash   VARCHAR(255) NOT NULL,
+    display_name    VARCHAR(128),
+    status          VARCHAR(32) NOT NULL DEFAULT 'ENABLED',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+状态：
+
+```text
+ENABLED
+DISABLED
+LOCKED
+```
+
+## D.3 角色表
+
+```sql
+CREATE TABLE dc_role (
+    id          BIGINT PRIMARY KEY,
+    role_code   VARCHAR(64) NOT NULL UNIQUE,
+    role_name   VARCHAR(128) NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+默认角色：
+
+```text
+ADMIN
+DEVELOPER
+VIEWER
+```
+
+## D.4 数据源表
+
+```sql
+CREATE TABLE dc_datasource (
+    id                  BIGINT PRIMARY KEY,
+    workspace_id        BIGINT,
+    name                VARCHAR(128) NOT NULL,
+    type                VARCHAR(32) NOT NULL,
+    host                VARCHAR(255),
+    port                INTEGER,
+    database_name       VARCHAR(128),
+    schema_name         VARCHAR(128),
+    username            VARCHAR(255),
+    password_cipher     TEXT,
+    jdbc_url            TEXT,
+    config_json         JSONB,
+    status              VARCHAR(32) NOT NULL DEFAULT 'UNKNOWN',
+    last_test_at        TIMESTAMPTZ,
+    created_by          BIGINT,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+V1 数据源：
+
+```text
+MYSQL
+POSTGRESQL
+```
+
+后续：
+
+```text
+ORACLE
+SQLSERVER
+```
+
+## D.5 数据集表
+
+```sql
+CREATE TABLE dc_dataset (
+    id              BIGINT PRIMARY KEY,
+    datasource_id   BIGINT NOT NULL,
+    catalog_name    VARCHAR(128),
+    schema_name     VARCHAR(128),
+    table_name      VARCHAR(256) NOT NULL,
+    table_type      VARCHAR(32),
+    comment         TEXT,
+    row_count       BIGINT,
+    last_sync_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.6 字段表
+
+```sql
+CREATE TABLE dc_dataset_field (
+    id                  BIGINT PRIMARY KEY,
+    dataset_id          BIGINT NOT NULL,
+    field_name          VARCHAR(256) NOT NULL,
+    data_type           VARCHAR(128),
+    jdbc_type           INTEGER,
+    length              INTEGER,
+    precision_value     INTEGER,
+    scale_value         INTEGER,
+    nullable            BOOLEAN,
+    primary_key_flag    BOOLEAN DEFAULT FALSE,
+    comment             TEXT,
+    ordinal_position    INTEGER,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.7 Pipeline 表
+
+```sql
+CREATE TABLE dc_pipeline (
+    id                  BIGINT PRIMARY KEY,
+    workspace_id        BIGINT,
+    name                VARCHAR(255) NOT NULL,
+    description         TEXT,
+    status              VARCHAR(32) NOT NULL DEFAULT 'DRAFT',
+    version             INTEGER NOT NULL DEFAULT 1,
+    graph_json          JSONB,
+    execution_strategy  VARCHAR(32) NOT NULL DEFAULT 'AUTO',
+    created_by          BIGINT,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+状态：
+
+```text
+DRAFT
+PUBLISHED
+DISABLED
+```
+
+## D.8 Pipeline Node
+
+```sql
+CREATE TABLE dc_pipeline_node (
+    id                  BIGINT PRIMARY KEY,
+    pipeline_id         BIGINT NOT NULL,
+    node_key            VARCHAR(128) NOT NULL,
+    node_type           VARCHAR(128) NOT NULL,
+    node_name           VARCHAR(255),
+    position_x          NUMERIC(12,2),
+    position_y          NUMERIC(12,2),
+    config_json         JSONB,
+    preferred_engine    VARCHAR(64),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(pipeline_id, node_key)
+);
+```
+
+## D.9 Pipeline Edge
+
+```sql
+CREATE TABLE dc_pipeline_edge (
+    id                  BIGINT PRIMARY KEY,
+    pipeline_id         BIGINT NOT NULL,
+    source_node_key     VARCHAR(128) NOT NULL,
+    target_node_key     VARCHAR(128) NOT NULL,
+    source_port         VARCHAR(128),
+    target_port         VARCHAR(128),
+    condition_json      JSONB,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.10 Engine 表
+
+```sql
+CREATE TABLE dc_engine (
+    id                  BIGINT PRIMARY KEY,
+    engine_code         VARCHAR(64) NOT NULL UNIQUE,
+    engine_name         VARCHAR(128) NOT NULL,
+    engine_type         VARCHAR(64) NOT NULL,
+    deployment_mode     VARCHAR(32) NOT NULL,
+    enabled             BOOLEAN NOT NULL DEFAULT TRUE,
+    version             VARCHAR(64),
+    config_json         JSONB,
+    status              VARCHAR(32) DEFAULT 'UNKNOWN',
+    last_health_check   TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.11 Pipeline Execution
+
+```sql
+CREATE TABLE dc_pipeline_execution (
+    id                  BIGINT PRIMARY KEY,
+    pipeline_id         BIGINT NOT NULL,
+    trigger_type        VARCHAR(32) NOT NULL,
+    status              VARCHAR(32) NOT NULL,
+    started_at          TIMESTAMPTZ,
+    finished_at         TIMESTAMPTZ,
+    duration_ms         BIGINT,
+    error_message       TEXT,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+状态：
+
+```text
+CREATED
+PLANNING
+RUNNING
+SUCCESS
+FAILED
+CANCELLING
+CANCELLED
+```
+
+## D.12 Execution Stage
+
+```sql
+CREATE TABLE dc_execution_stage (
+    id                      BIGINT PRIMARY KEY,
+    execution_id            BIGINT NOT NULL,
+    stage_index             INTEGER NOT NULL,
+    engine_code             VARCHAR(64) NOT NULL,
+    status                  VARCHAR(32) NOT NULL,
+    engine_job_id           VARCHAR(255),
+    started_at              TIMESTAMPTZ,
+    finished_at             TIMESTAMPTZ,
+    input_rows              BIGINT,
+    output_rows             BIGINT,
+    error_rows              BIGINT,
+    error_message           TEXT,
+    engine_metadata_json    JSONB,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.13 Node Execution
+
+```sql
+CREATE TABLE dc_node_execution (
+    id                  BIGINT PRIMARY KEY,
+    execution_id        BIGINT NOT NULL,
+    stage_id            BIGINT,
+    node_key            VARCHAR(128) NOT NULL,
+    node_type           VARCHAR(128) NOT NULL,
+    status              VARCHAR(32) NOT NULL,
+    started_at          TIMESTAMPTZ,
+    finished_at         TIMESTAMPTZ,
+    duration_ms         BIGINT,
+    input_rows          BIGINT,
+    output_rows         BIGINT,
+    error_rows          BIGINT,
+    error_message       TEXT,
+    log_text            TEXT
+);
+```
+
+## D.14 Quality Result
+
+```sql
+CREATE TABLE dc_quality_result (
+    id                  BIGINT PRIMARY KEY,
+    execution_id        BIGINT NOT NULL,
+    node_execution_id   BIGINT NOT NULL,
+    rule_type           VARCHAR(64) NOT NULL,
+    dataset_id          BIGINT,
+    field_name          VARCHAR(255),
+    total_rows          BIGINT,
+    error_rows          BIGINT,
+    pass_rows           BIGINT,
+    pass_rate           NUMERIC(8,4),
+    status              VARCHAR(32),
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.15 Quality Sample
+
+```sql
+CREATE TABLE dc_quality_sample (
+    id                  BIGINT PRIMARY KEY,
+    quality_result_id   BIGINT NOT NULL,
+    sample_index        INTEGER NOT NULL,
+    data_json           JSONB NOT NULL,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+默认最多保存 1000 条样例。
+
+## D.16 Schedule
+
+```sql
+CREATE TABLE dc_schedule (
+    id                  BIGINT PRIMARY KEY,
+    pipeline_id         BIGINT NOT NULL,
+    name                VARCHAR(255) NOT NULL,
+    cron_expression     VARCHAR(128) NOT NULL,
+    enabled             BOOLEAN NOT NULL DEFAULT TRUE,
+    last_fire_at        TIMESTAMPTZ,
+    next_fire_at        TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+## D.17 Audit
+
+```sql
+CREATE TABLE dc_audit_log (
+    id              BIGINT PRIMARY KEY,
+    user_id         BIGINT,
+    action          VARCHAR(128) NOT NULL,
+    resource_type   VARCHAR(64),
+    resource_id     VARCHAR(128),
+    request_path    VARCHAR(512),
+    ip              VARCHAR(64),
+    detail_json     JSONB,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+---
+
+# 附录 E：Datasource 详细实现
+
+## E.1 密码
+
+使用：
+
+```text
+AES-256-GCM
+```
+
+密钥：
+
+```text
+DATACRAFT_SECRET_KEY
+```
+
+禁止：
+
+```text
+DB 明文
+API 返回真实密码
+日志打印密码
+编辑页面读取原密码
+```
+
+编辑数据源时，如果密码字段为空：
+
+```text
+保留已有密文
+```
+
+## E.2 测试连接流程
+
+```text
+POST /api/v1/datasources/test
+↓
+request validation
+↓
+build JDBC config
+↓
+create short-lived connection
+↓
+SELECT 1
+↓
+read database product/version
+↓
+close
+↓
+return latency/status
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "latencyMs": 36,
+  "databaseVersion": "PostgreSQL 16"
+}
+```
+
+## E.3 Metadata Collector SPI
+
+```java
+public interface MetadataCollector {
+
+    DatasourceType supports();
+
+    List<TableMetadata> collectTables(
+        DatasourceConnection connection
+    );
+
+    List<ColumnMetadata> collectColumns(
+        DatasourceConnection connection,
+        TableIdentifier table
+    );
+}
+```
+
+实现：
+
+```text
+MySqlMetadataCollector
+PostgresqlMetadataCollector
+```
+
+通过：
+
+```text
+MetadataCollectorRegistry
+```
+
+选择实现。
+
+---
+
+# 附录 F：Node 元数据与动态 UI
+
+## F.1 NodeCategory
+
+```java
+public enum NodeCategory {
+    SOURCE,
+    TRANSFORM,
+    QUALITY,
+    GOVERNANCE,
+    SINK,
+    UTILITY
+}
+```
+
+## F.2 NodeMetadata
+
+```java
+public record NodeMetadata(
+    String type,
+    String name,
+    NodeCategory category,
+    String icon,
+    List<String> supportedEngines,
+    String defaultEngine,
+    List<NodePort> inputs,
+    List<NodePort> outputs,
+    ConfigSchema configSchema
+) {}
+```
+
+## F.3 ConfigSchema
+
+```java
+public record ConfigSchema(
+    List<ConfigField> fields
+) {}
+```
+
+```java
+public record ConfigField(
+    String name,
+    String label,
+    String type,
+    boolean required,
+    Object defaultValue,
+    List<Option> options,
+    Map<String, Object> rules
+) {}
+```
+
+字段类型：
+
+```text
+TEXT
+PASSWORD
+NUMBER
+BOOLEAN
+SELECT
+MULTI_SELECT
+DATASOURCE_SELECT
+DATASET_SELECT
+FIELD_SELECT
+SQL_EDITOR
+JSON_EDITOR
+CRON
+```
+
+## F.4 NodeProvider
+
+```java
+public interface NodeProvider {
+
+    String type();
+
+    NodeMetadata metadata();
+
+    ValidationResult validate(
+        NodeDefinition definition
+    );
+}
+```
+
+NodeProvider 不执行数据。
+
+## F.5 第一批节点
+
+```text
+DATABASE_SOURCE
+SQL_SOURCE
+FILTER
+SQL_TRANSFORM
+FIELD_MAPPING
+TYPE_CONVERT
+TRIM
+REPLACE
+NULL_CHECK
+UNIQUE_CHECK
+RANGE_CHECK
+REGEX_CHECK
+LENGTH_CHECK
+ENUM_CHECK
+CUSTOM_SQL_CHECK
+MASKING
+DEDUPLICATE
+DEFAULT_VALUE
+DATABASE_SINK
+```
+
+---
+
+# 附录 G：Pipeline Validator 详细规则
+
+必须校验：
+
+```text
+1. 至少一个 SOURCE。
+2. 至少存在合法终止节点。
+3. DAG 不允许环。
+4. Edge source node 存在。
+5. Edge target node 存在。
+6. sourcePort 必须存在。
+7. targetPort 必须存在。
+8. 必填 config 完整。
+9. Datasource 必须存在。
+10. Datasource 不得 DISABLED。
+11. Engine capability 能覆盖 Node。
+12. SOURCE 不允许普通输入边。
+13. SINK 不允许普通输出边。
+14. 重复 node_key 不允许。
+```
+
+DAG 使用 Kahn Topological Sort。
+
+最低单测：
+
+```text
+single chain
+branch
+merge
+cycle
+isolated node
+missing node
+invalid port
+```
+
+---
+
+# 附录 H：Execution Engine SPI 详细规格
+
+## H.1 接口
+
+```java
+public interface ExecutionEngine {
+
+    String engineType();
+
+    EngineMetadata metadata();
+
+    EngineHealth healthCheck();
+
+    ValidationResult validate(
+        ExecutionStagePlan stage
+    );
+
+    EngineJob compile(
+        ExecutionStagePlan stage
+    );
+
+    EngineExecution submit(
+        EngineJob job,
+        EngineExecutionContext context
+    );
+
+    EngineExecutionStatus getStatus(
+        String engineExecutionId
+    );
+
+    void cancel(
+        String engineExecutionId
+    );
+
+    EngineLogPage logs(
+        String engineExecutionId,
+        long offset,
+        int limit
+    );
+}
+```
+
+## H.2 Deployment Mode
+
+```java
+public enum EngineDeploymentMode {
+    EMBEDDED,
+    LOCAL_PROCESS,
+    REMOTE_SERVICE
+}
+```
+
+默认：
+
+```text
+Native = EMBEDDED
+Camel = EMBEDDED
+DataX = LOCAL_PROCESS
+SeaTunnel = LOCAL_PROCESS / REMOTE_SERVICE
+Flink = REMOTE_SERVICE
+```
+
+## H.3 Engine Registry
+
+通过 Spring 收集实现：
+
+```java
+@Component
+public class EngineRegistry {
+
+    private final Map<String, ExecutionEngine> engines;
+
+    public EngineRegistry(List<ExecutionEngine> engineList) {
+        this.engines = engineList.stream()
+            .collect(Collectors.toUnmodifiableMap(
+                ExecutionEngine::engineType,
+                Function.identity()
+            ));
+    }
+}
+```
+
+禁止核心执行逻辑出现：
+
+```java
+if ("DATAX".equals(engine))
+```
+
+---
+
+# 附录 I：Execution Planner 可执行规则
+
+## I.1 Planner 输入
+
+```text
+PipelineDefinition
+NodeMetadata
+EngineCapability
+RuntimeVariables
+PipelineExecutionStrategy
+```
+
+## I.2 Planner 输出
+
+```java
+public record ExecutionPlan(
+    Long pipelineId,
+    Integer pipelineVersion,
+    List<ExecutionStagePlan> stages,
+    Map<String, Object> runtimeVariables
+) {}
+```
+
+## I.3 Engine 选择优先级（V1 简化）
+
+```text
+Node preferredEngine
+    >
+Pipeline executionStrategy
+    >
+Node defaultEngine
+    >
+NATIVE
+```
+
+前提：所选引擎必须支持节点。
+
+## I.4 Stage 合并规则
+
+连续节点满足以下条件可以归为同一 Stage：
+
+```text
+同一执行引擎
++
+引擎支持这些 Node
++
+无需跨系统物化
++
+数据语义兼容
+```
+
+否则切 Stage。
+
+## I.5 示例
+
+Pipeline：
+
+```text
+MySQL
+↓
+Field Mapping
+↓
+PostgreSQL
+```
+
+如果 DataX 支持全部：
+
+```text
+Stage 1 = DATAX
+```
+
+Pipeline：
+
+```text
+MySQL
+↓
+Sync
+↓
+Null Check
+↓
+Webhook
+```
+
+可能：
+
+```text
+Stage 1 DATAX
+Stage 2 NATIVE
+Stage 3 CAMEL
+```
+
+---
+
+# 附录 J：DataReference 与 Materialization
+
+## J.1 DataReference
+
+```java
+public record DataReference(
+    DataReferenceType type,
+    String uri,
+    Map<String, Object> metadata
+) {}
+```
+
+类型：
+
+```text
+DATABASE_TABLE
+DATABASE_QUERY
+FILE
+OBJECT_STORAGE
+KAFKA_TOPIC
+MEMORY
+NONE
+```
+
+MEMORY 只用于：
+
+```text
+小量控制数据
+元数据
+小样本
+```
+
+禁止用于：
+
+```text
+大批量业务数据
+```
+
+## J.2 Materialization
+
+跨 Engine：
+
+```text
+Stage A
+↓
+Materialize
+↓
+DataReference
+↓
+Stage B
+```
+
+V1 首选：
+
+```text
+DATABASE_TABLE
+```
+
+临时表命名：
+
+```text
+dc_tmp_{executionId}_{stageId}
+```
+
+失败资源默认保留：
+
+```text
+24h
+```
+
+后台定时清理。
+
+---
+
+# 附录 K：Execution 状态机与事务边界
+
+## K.1 Execution 状态
+
+```text
+CREATED
+↓
+PLANNING
+↓
+RUNNING
+├── SUCCESS
+├── FAILED
+└── CANCELLING → CANCELLED
+```
+
+## K.2 Node 状态
+
+```text
+PENDING
+RUNNING
+SUCCESS
+FAILED
+SKIPPED
+CANCELLED
+```
+
+## K.3 事务边界
+
+禁止：
+
+```text
+一个 DB transaction 包住整个 Pipeline
+```
+
+正确：
+
+```text
+create execution → commit
+PLANNING → commit
+stage start → commit
+node state update → commit
+stage finish → commit
+execution finish → commit
+```
+
+便于服务崩溃后恢复状态。
+
+## K.4 并发
+
+V1：
+
+```text
+全局最多 4 个 Pipeline Execution
+单 Pipeline 最多 1 个并行 Execution
+```
+
+配置：
+
+```yaml
+datacraft:
+  execution:
+    max-concurrent: 4
+    max-per-pipeline: 1
+```
+
+超出默认：
+
+```text
+QUEUE
+```
+
+---
+
+# 附录 L：Native Engine 节点规范
+
+## L.1 DATABASE_SOURCE
+
+配置：
+
+```json
+{
+  "datasourceId": 1001,
+  "schema": "public",
+  "table": "customer",
+  "columns": ["id", "name", "phone"]
+}
+```
+
+优先输出：
+
+```text
+DATABASE_QUERY
+```
+
+或：
+
+```text
+DATABASE_TABLE
+```
+
+## L.2 FILTER
+
+配置：
+
+```json
+{
+  "expression": "status = 1"
+}
+```
+
+V1 不自研复杂表达式 DSL。
+
+对于数据库数据，尽量转 SQL Pushdown。
+
+## L.3 SQL_TRANSFORM
+
+配置：
+
+```json
+{
+  "sql": "SELECT id, trim(name) AS name FROM ${input}"
+}
+```
+
+V1 仅允许 SELECT。
+
+禁止：
+
+```text
+DDL
+INSERT
+UPDATE
+DELETE
+多语句
+```
+
+必须提供 `SqlSafetyValidator`。
+
+## L.4 FIELD_MAPPING
+
+```json
+{
+  "mappings": [
+    {
+      "source": "customer_name",
+      "target": "name"
+    }
+  ]
+}
+```
+
+## L.5 TYPE_CONVERT
+
+```json
+{
+  "field": "age",
+  "targetType": "INTEGER",
+  "onError": "NULL"
+}
+```
+
+onError：
+
+```text
+FAIL
+NULL
+DEFAULT
+```
+
+## L.6 MASKING
+
+内置：
+
+```text
+PHONE
+EMAIL
+ID_CARD
+CUSTOM
+```
+
+PHONE：
+
+```text
+138****1234
+```
+
+---
+
+# 附录 M：Data Quality 详细规格
+
+## M.1 统一 SPI
+
+```java
+public interface QualityRuleProvider {
+
+    String type();
+
+    QualityRuleMetadata metadata();
+
+    QualityExecutionSpec compile(
+        NodeDefinition node,
+        DataReference input
+    );
+}
+```
+
+## M.2 NULL_CHECK
+
+```json
+{
+  "field": "phone"
+}
+```
+
+SQL：
+
+```sql
+field IS NULL
+```
+
+## M.3 UNIQUE_CHECK
+
+```sql
+GROUP BY field
+HAVING COUNT(*) > 1
+```
+
+## M.4 RANGE_CHECK
+
+```json
+{
+  "field": "age",
+  "min": 0,
+  "max": 120
+}
+```
+
+## M.5 REGEX_CHECK
+
+必须通过 SQL Dialect 生成数据库差异语法。
+
+接口：
+
+```text
+SqlDialect
+```
+
+实现：
+
+```text
+MySqlDialect
+PostgresqlDialect
+```
+
+## M.6 CUSTOM_SQL_CHECK
+
+用户输入条件：
+
+```text
+age < 0 OR age > 120
+```
+
+DataCraft 生成：
+
+```sql
+SELECT *
+FROM input
+WHERE age < 0 OR age > 120
+```
+
+禁止多语句及 DDL/DML。
+
+---
+
+# 附录 N：DataX 集成详细规格
+
+## N.1 版本
+
+```text
+V1.2
+```
+
+## N.2 运行模式
+
+```text
+LOCAL_PROCESS
+```
+
+## N.3 模块
+
+```text
+datacraft-engine-datax
+├── DataXExecutionEngine
+├── DataXCompiler
+├── DataXJobBuilder
+├── DataXProcessManager
+├── DataXLogParser
+└── DataXMetricsParser
+```
+
+## N.4 配置
+
+```yaml
+datacraft:
+  engines:
+    datax:
+      enabled: false
+      home: /opt/datax
+      python: /usr/bin/python3
+      job-temp-dir: ./data/datax/jobs
+      max-concurrent: 2
+```
+
+## N.5 执行流程
+
+```text
+ExecutionStagePlan
+↓
+DataXCompiler
+↓
+DataX Job JSON
+↓
+ProcessBuilder
+↓
+datax.py job.json
+↓
+parse stdout/stderr
+↓
+EngineExecutionStatus
+```
+
+必须记录：
+
+```text
+PID
+Start Time
+Exit Code
+Stdout
+Stderr
+Rows
+Duration
+```
+
+## N.6 核心原则
+
+禁止把 DataX Job JSON 作为 DataCraft Pipeline 的主存储模型。
+
+DataCraft Pipeline 永远是 Source of Truth。
+
+---
+
+# 附录 O：Apache Camel 集成详细规格
+
+## O.1 版本
+
+```text
+V1.5
+```
+
+## O.2 模式
+
+```text
+EMBEDDED
+```
+
+## O.3 Managed CamelContext
+
+整个 DataCraft Server 统一管理 CamelContext。
+
+禁止：
+
+```text
+每 Node 一个 CamelContext
+```
+
+## O.4 CamelRuntimeManager
+
+职责：
+
+```text
+startRoute
+stopRoute
+removeRoute
+routeStatus
+cleanup
+```
+
+## O.5 第一批 Camel 能力
+
+```text
+HTTP
+FTP
+SFTP
+FILE
+Kafka
+RabbitMQ
+Mail
+```
+
+按需加载依赖，不把 Camel 全量组件一次引入。
+
+---
+
+# 附录 P：Scheduler 详细规则
+
+V1 使用 Quartz。
+
+Quartz Job 只负责：
+
+```text
+触发 ExecutionService.submit()
+```
+
+禁止在 Quartz Job 内直接编写 Pipeline 执行逻辑。
+
+支持：
+
+```text
+Manual
+Cron
+Daily
+Weekly
+Monthly
+Retry
+API Trigger
+```
+
+---
+
+# 附录 Q：SSE 事件规范
+
+接口：
+
+```http
+GET /api/v1/executions/{id}/events
+```
+
+事件名：
+
+```text
+execution.started
+stage.started
+node.started
+node.log
+node.success
+node.failed
+stage.success
+stage.failed
+execution.success
+execution.failed
+execution.cancelled
+```
+
+Payload：
+
+```json
+{
+  "event": "node.success",
+  "executionId": 1001,
+  "stageId": 2001,
+  "nodeKey": "null_check_1",
+  "timestamp": "2026-09-07T10:00:00Z",
+  "data": {
+    "inputRows": 100000,
+    "errorRows": 123
+  }
+}
+```
+
+---
+
+# 附录 R：前端路由与页面规格
+
+## R.1 路由
+
+```text
+/login
+/dashboard
+/datasources
+/datasources/:id
+/assets
+/assets/:datasetId
+/pipelines
+/pipelines/:id/editor
+/quality
+/quality/results/:id
+/executions
+/executions/:id
+/system/users
+/system/roles
+/system/engines
+```
+
+## R.2 Layout
+
+```text
+┌──────────────────────────────────────────────┐
+│ DataCraft                              User  │
+├─────────────┬────────────────────────────────┤
+│ Dashboard   │                                │
+│ Datasource  │                                │
+│ Assets      │          Router View           │
+│ Pipeline    │                                │
+│ Quality     │                                │
+│ Execution   │                                │
+│ System      │                                │
+└─────────────┴────────────────────────────────┘
+```
+
+## R.3 Pipeline Editor
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│ ← Pipelines  Customer Governance      Save Validate Run │
+├──────────────┬──────────────────────────┬────────────────┤
+│ Node Library │ Canvas                   │ Config Panel   │
+│              │                          │                │
+│ Source       │ [MySQL]                  │ Node Name      │
+│ Transform    │    ↓                     │ Datasource     │
+│ Quality      │ [Filter]                 │ Schema         │
+│ Governance   │    ↓                     │ Table          │
+│ Sink         │ [NullCheck]              │                │
+│              │    ↓                     │ Engine=AUTO    │
+│              │ [PostgreSQL]             │                │
+└──────────────┴──────────────────────────┴────────────────┘
+```
+
+推荐宽度：
+
+```text
+Node Library = 220px
+Config Panel = 320px
+Canvas = flex
+```
+
+## R.4 Node 交互
+
+拖入：
+
+```text
+生成 nodeKey
+保存 x/y
+```
+
+点击：
+
+```text
+右侧配置面板
+```
+
+复制：
+
+```text
+复制 config
+生成新 nodeKey
+位置偏移 20px
+```
+
+删除：
+
+```text
+同步删除 Edge
+```
+
+---
+
+# 附录 S：安全与审计
+
+## S.1 JWT
+
+```text
+Authorization: Bearer <token>
+```
+
+Public：
+
+```text
+/api/v1/auth/login
+/actuator/health
+```
+
+其他 API 默认鉴权。
+
+## S.2 RBAC
+
+ADMIN：
+
+```text
+全部
+```
+
+DEVELOPER：
+
+```text
+Datasource read/write
+Metadata read
+Pipeline read/write/execute
+Quality read
+Execution read
+```
+
+VIEWER：
+
+```text
+read only
+```
+
+## S.3 审计必须覆盖
+
+```text
+login
+datasource create/update/delete
+pipeline create/update/delete/publish
+execution submit/cancel/retry
+schedule create/update/delete
+engine config update
+```
+
+---
+
+# 附录 T：日志规范
+
+日志 MDC：
+
+```text
+traceId
+executionId
+stageId
+nodeKey
+```
+
+禁止日志输出：
+
+```text
+password
+password_cipher
+JWT
+secret key
+含密码 JDBC URL
+```
+
+---
+
+# 附录 U：配置约定
+
+示例：
+
+```yaml
+spring:
+  application:
+    name: datacraft
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:datacraft}
+    username: ${DB_USER:datacraft}
+    password: ${DB_PASSWORD:datacraft}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  flyway:
+    enabled: true
+
+datacraft:
+  security:
+    jwt-secret: ${DATACRAFT_JWT_SECRET:change-me}
+  crypto:
+    secret-key: ${DATACRAFT_SECRET_KEY:}
+  execution:
+    max-concurrent: 4
+    max-per-pipeline: 1
+```
+
+生产环境禁止使用默认 secret。
+
+---
+
+# 附录 V：测试矩阵
+
+## V.1 Unit Test 必须覆盖
+
+```text
+PipelineValidator
+DagTopologicalSorter
+NodeRegistry
+EngineRegistry
+ExecutionPlanner
+SqlSafetyValidator
+```
+
+## V.2 Integration Test
+
+使用 Testcontainers：
+
+```text
+PostgreSQL
+MySQL
+Redis
+```
+
+## V.3 DataX
+
+```text
+DataXCompilerTest
+DataXJobBuilderTest
+DataXLogParserTest
+```
+
+## V.4 Camel
+
+```text
+CamelCompilerTest
+CamelRuntimeManagerTest
+```
+
+## V.5 Frontend
+
+最低：
+
+```text
+TypeScript compile
+npm run build
+```
+
+后续：
+
+```text
+Vitest
+Playwright
+```
+
+---
+
+# 附录 W：各版本进一步拆成可执行 Phase
+
+## W.1 V0.1 Foundation
+
+### Phase 0A — Repository
+
+创建：
+
+```text
+parent pom
+server modules
+web project
+.gitignore
+README
+docker-compose
+```
+
+验收：
+
+```text
+mvn -q -DskipTests package
+npm run build
+```
+
+### Phase 0B — Infrastructure
+
+完成：
+
+```text
+PostgreSQL
+Redis
+Flyway
+Actuator
+统一 Response
+统一 Exception
+```
+
+### Phase 0C — Basic Web Layout
+
+完成：
+
+```text
+Vue Router
+Pinia
+Element Plus
+Base Layout
+Placeholder Routes
+```
+
+禁止进入业务功能。
+
+## W.2 V0.2 Datasource / Metadata
+
+### Phase 1A — Datasource CRUD
+
+```text
+Entity
+Mapper
+Service
+Controller
+DTO
+Flyway
+UI List
+Create/Edit Drawer
+```
+
+### Phase 1B — Connection Test
+
+```text
+JDBC URL Builder
+AES-GCM
+Test API
+UI Status
+```
+
+### Phase 1C — Metadata
+
+```text
+Collector SPI
+MySQL Collector
+PostgreSQL Collector
+Dataset tables
+Asset UI
+```
+
+## W.3 V0.3 Pipeline Designer
+
+### Phase 2A — Pipeline Persistence
+
+```text
+Pipeline CRUD
+Node
+Edge
+```
+
+### Phase 2B — Node Metadata
+
+```text
+NodeProvider
+NodeRegistry
+ConfigSchema
+GET /node-types
+```
+
+### Phase 2C — Vue Flow
+
+```text
+Node Library
+Canvas
+Config Panel
+Save/Load
+```
+
+### Phase 2D — Validation
+
+```text
+DAG
+Node config
+Port
+Datasource reference
+```
+
+## W.4 V0.4 Native Engine
+
+### Phase 3A — Engine API
+
+```text
+ExecutionEngine
+EngineRegistry
+NativeEngine skeleton
+```
+
+### Phase 3B — Planner
+
+```text
+ExecutionPlan
+Stage
+DataReference
+Planner
+```
+
+### Phase 3C — First Runnable Pipeline
+
+```text
+DATABASE_SOURCE
+FILTER
+DATABASE_SINK
+```
+
+## W.5 V0.5 Transform
+
+```text
+SQL Transform
+Field Mapping
+Type Convert
+Trim
+Replace
+```
+
+## W.6 V0.6 Quality
+
+```text
+Null
+Unique
+Range
+Regex
+Length
+Enum
+Custom SQL
+Result
+Sample
+```
+
+## W.7 V0.7 Scheduler / Monitor
+
+```text
+Quartz
+Cron
+Execution History
+Retry
+Cancel
+SSE
+Execution Detail UI
+```
+
+## W.8 V1.1 Engine SPI Hardening
+
+```text
+Engine Management
+Capabilities
+Health
+Native SPI-only path
+```
+
+## W.9 V1.2 DataX
+
+```text
+Compiler
+Process Manager
+Logs
+Metrics
+Cancel
+```
+
+## W.10 V1.3 Hybrid
+
+```text
+Multi Stage
+Materialization
+Stage dependency
+Temp cleanup
+```
+
+## W.11 V1.5 Camel
+
+```text
+CamelContext
+Route Manager
+HTTP
+SFTP
+Kafka
+Webhook
+```
+
+---
+
+# 附录 X：Codex/Luna 第一轮执行提示词
+
+将本文件放到仓库根目录并命名为 `DESIGN.md` 后，第一次执行使用：
+
+```text
+你接手的是一个完全空的 DataCraft Git 仓库。
+
+先完整阅读：
+DESIGN.md
+AGENTS.md
+DEV_PROGRESS.md
+
+本次只执行：
+V0.1 / Phase 0A + Phase 0B + Phase 0C
+
+目标是把空仓库初始化成一个可持续开发、可编译、可运行的工程骨架。
+
+开始编码前：
+1. 检查仓库内容和 Git 状态。
+2. 输出实施计划。
+3. 列出预计创建的主要目录和文件。
+4. 说明 Maven 模块依赖方向。
+5. 然后开始实现。
+
+本阶段允许：
+Java 21
+Spring Boot 3
+Maven Multi-module
+PostgreSQL
+Redis
+Flyway
+Actuator
+Vue3
+TypeScript
+Vite
+Element Plus
+Pinia
+Vue Router
+Docker Compose
+
+本阶段禁止：
+Datasource 业务
+Metadata 业务
+Pipeline 业务
+DataX
+Camel
+SeaTunnel
+Flink
+
+完成后实际执行：
+mvn test
+mvn package
+npm install
+npm run build
+docker compose config
+
+失败必须修复后重跑。
+
+最后更新 DEV_PROGRESS.md，并汇报：
+- 完成内容
+- 创建的模块
+- 测试结果
+- 构建结果
+- 当前风险
+- 下一 Phase
+
+不要提前进入下一阶段。
+```
+
+---
+
+# 附录 Y：Codex/Luna 后续通用提示词
+
+```text
+继续 DataCraft 开发。
+
+先阅读：
+DESIGN.md
+AGENTS.md
+DEV_PROGRESS.md
+
+检查当前代码、Git 状态和已有测试。
+
+本次只执行：
+<明确 Version / Phase>
+
+开始编码前先输出计划。
+实现完成后执行全部相关测试和构建。
+修复本次修改引入的问题。
+更新 DEV_PROGRESS.md。
+
+不要进入下一个 Phase。
+不要重新设计 DESIGN.md 已确定的核心架构。
+```
+
+---
+
+# 附录 Z：模型执行边界
+
+即使使用 Luna 的最高推理级别，也不建议把任务写成：
+
+```text
+“根据 DESIGN.md 一次把 DataCraft 全部开发完成。”
+```
+
+推荐让高能力模型做的是：
+
+```text
+理解整个设计
+↓
+只执行当前 Phase
+↓
+跨多个文件完整落地
+↓
+真实运行构建和测试
+↓
+自动根据错误修复
+↓
+更新进度
+```
+
+这样既能发挥 Luna 在长上下文和跨文件编码上的优势，又能避免大项目一次性生成导致的架构漂移。
+
+最终原则：
+
+> DESIGN.md 负责“把决定提前做清楚”；Luna 负责“按照决定高质量执行”。
+
