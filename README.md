@@ -1,6 +1,6 @@
 # DataCraft
 
-DataCraft 是一个通过可视化 Pipeline 统一编排多种数据处理引擎的数据集成与数据治理平台。当前已完成 V0.3 / Phase 4：平台认证、角色菜单、控制台框架、JDBC 数据源管理、数据库资产浏览和 Pipeline 控制面模型。
+DataCraft 是一个通过可视化 Pipeline 统一编排多种数据处理引擎的数据集成与数据治理平台。当前已完成 V0.4 / Phase 5：平台认证、角色菜单、控制台框架、JDBC 数据源管理、数据库资产浏览、Pipeline 控制面模型和 Vue Flow 可视化编辑器。
 
 ## 环境要求
 
@@ -77,6 +77,13 @@ GET    /api/v1/node-types/{type}
 
 Pipeline 当前由控制面维护名称、版本、状态、执行策略、节点和边；创建/更新会校验节点类型、节点引用和 DAG 无环性。节点注册表只提供元数据，不创建或调用 DataX、Camel、SeaTunnel、Flink 等执行引擎；可视化编辑器和执行规划属于后续阶段。
 
+Phase 5 Pipeline Editor：
+
+- `/pipelines` 展示 Pipeline 列表，并支持新建、进入编辑器和删除。
+- `/pipelines/new` 与 `/pipelines/{id}` 提供三栏 Vue Flow 编辑器：左侧元数据节点库，中间 DAG 画布，右侧管道/节点属性检查器。
+- 编辑器支持拖入 `DATABASE_SOURCE`、`FILTER`、`DATABASE_SINK` 节点，建立连线，编辑节点配置 JSON、坐标和首选引擎，并通过 Phase 4 API 保存。
+- 本阶段只维护控制面 Pipeline 图模型，不执行 Pipeline、不发布、不调度，也不接入 DataX、Camel、SeaTunnel 或 Flink。
+
 前端开发：
 
 ```shell
@@ -98,4 +105,4 @@ npm run build
 
 ## 当前边界
 
-Phase 4 已完成认证、角色菜单、登录态、系统 Layout、数据源管理、元数据资产浏览和 Pipeline 控制面模型。下一阶段按 `DESIGN.md` 进入 Phase 5 Pipeline Editor，使用 Vue Flow 构建可视化编辑器；执行规划、执行引擎和质量规则仍保持在后续阶段。
+Phase 5 已完成认证、角色菜单、登录态、系统 Layout、数据源管理、元数据资产浏览、Pipeline 控制面模型和可视化编辑器。下一阶段按 `DESIGN.md` 进入 Phase 6 Native Execution；执行规划、引擎 SPI、质量规则和调度仍保持在后续阶段。

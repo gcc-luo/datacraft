@@ -1,13 +1,13 @@
 # DataCraft Development Progress
 
 ## Current Version
-V0.3
+V0.4
 
 ## Current Phase
-Phase 4 — Pipeline Model (Completed)
+Phase 5 — Pipeline Editor (Completed)
 
 ## Repository State
-Initialized modular monolith with datasource management, database metadata browsing, and the Pipeline control-plane model; backend, frontend, infrastructure, and CI builds are ready.
+Initialized modular monolith with datasource management, database metadata browsing, Pipeline control-plane modeling, and a Vue Flow editor; backend, frontend, infrastructure, and CI builds are ready.
 
 ## Completed
 - DESIGN.md prepared
@@ -48,16 +48,24 @@ Initialized modular monolith with datasource management, database metadata brows
 - Pipeline name, node-key, node-type, dangling-edge, duplicate-edge, self-loop, and DAG cycle validation
 - Authenticated Pipeline CRUD and NodeMetadata REST APIs with stable validation/not-found error codes
 - Phase 4 backend unit, persistence mapping, migration, application-service, and MVC tests
+- Typed Pipeline API client and Vue Flow graph mapping for control-plane DTOs
+- Pipeline list route with create, browse, and delete workflow
+- Metadata-driven node palette with search, category grouping, and drag payloads
+- Custom Pipeline canvas nodes with engine/category identity and source/target handles
+- Pipeline inspector for pipeline properties, node properties, engine preference, coordinates, and JSON validation
+- Three-column Pipeline editor with drag/drop nodes, DAG connections, save, update, delete, and dirty-state feedback
+- Phase 5 frontend component/view tests and production build
 
 ## In Progress
 - None
 
 ## Next
-- Phase 5 — Pipeline Editor
-- Build the Vue Flow-based visual Pipeline editor on top of the Phase 4 APIs
+- Phase 6 — Native Execution
+- Add execution planning and the first native engine path while preserving the control-plane / execution-plane boundary
 
 ## Not Started
-- Pipeline Editor
+- Native Execution
+- Execution Planner
 - Quality
 - Scheduler
 - DataX

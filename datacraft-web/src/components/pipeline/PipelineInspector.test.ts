@@ -24,7 +24,7 @@ describe('PipelineInspector', () => {
 
   it('edits node properties and available engine', async () => {
     const selectedNode = {
-      nodeKey: 'source', nodeType: 'DATABASE_SOURCE', nodeName: 'Customer DB', configJson: '{}', preferredEngine: 'NATIVE', metadata: metadata[0],
+      nodeKey: 'source', nodeType: 'DATABASE_SOURCE', nodeName: 'Customer DB', configJson: '{}', preferredEngine: 'NATIVE', position: { x: 40, y: 60 }, metadata: metadata[0],
     }
     const wrapper = mount(PipelineInspector, { props: { pipeline, selectedNode, nodeMetadata: metadata } })
 
@@ -39,7 +39,7 @@ describe('PipelineInspector', () => {
 
   it('keeps invalid JSON from updating node config', async () => {
     const selectedNode = {
-      nodeKey: 'source', nodeType: 'DATABASE_SOURCE', nodeName: 'Customer DB', configJson: '{}', preferredEngine: null, metadata: metadata[0],
+      nodeKey: 'source', nodeType: 'DATABASE_SOURCE', nodeName: 'Customer DB', configJson: '{}', preferredEngine: null, position: { x: 40, y: 60 }, metadata: metadata[0],
     }
     const wrapper = mount(PipelineInspector, { props: { pipeline, selectedNode, nodeMetadata: metadata } })
 

@@ -37,7 +37,10 @@ const dirty = ref(false)
 const errorMessage = ref('')
 const notice = ref('')
 
-const selectedNode = computed<PipelineNodeData | null>(() => (nodes.value.find((node) => node.id === selectedNodeId.value)?.data as PipelineNodeData | undefined) || null)
+const selectedNode = computed<(PipelineNodeData & { position: { x: number; y: number } }) | null>(() => {
+  const node = nodes.value.find((item) => item.id === selectedNodeId.value)
+  return node ? { ...(node.data as PipelineNodeData), position: node.position } : null
+})
 const nodeTypes = { pipeline: PipelineNode }
 
 function metadataFor(type: string) {

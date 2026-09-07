@@ -9,9 +9,13 @@ interface InspectorPipeline {
   executionStrategy: ExecutionStrategy
 }
 
+interface InspectorNode extends PipelineNodeData {
+  position?: { x: number; y: number }
+}
+
 const props = defineProps<{
   pipeline: InspectorPipeline
-  selectedNode: PipelineNodeData | null
+  selectedNode: InspectorNode | null
   nodeMetadata: NodeMetadataResponse[]
 }>()
 
@@ -65,8 +69,8 @@ function validateAndEmitConfig() {
         <label>节点名称<input data-testid="node-name" :value="selectedNode.nodeName" @input="emitNode('nodeName', ($event.target as HTMLInputElement).value)" /></label>
         <label>执行引擎<select data-testid="node-engine" :value="selectedNode.preferredEngine || ''" @change="emitNode('preferredEngine', ($event.target as HTMLSelectElement).value || null)"><option value="">自动选择</option><option v-for="engine in engineOptions" :key="engine" :value="engine">{{ engine }}</option></select></label>
         <div class="pipeline-inspector__row">
-          <label>X 坐标<input type="number" :value="0" @change="emitPosition({ x: Number(($event.target as HTMLInputElement).value), y: 0 })" /></label>
-          <label>Y 坐标<input type="number" :value="0" @change="emitPosition({ x: 0, y: Number(($event.target as HTMLInputElement).value) })" /></label>
+          <label>X 坐标<input type="number" :value="selectedNode.position?.x || 0" @change="emitPosition({ x: Number(($event.target as HTMLInputElement).value), y: selectedNode.position?.y || 0 })" /></label>
+          <label>Y 坐标<input type="number" :value="selectedNode.position?.y || 0" @change="emitPosition({ x: selectedNode.position?.x || 0, y: Number(($event.target as HTMLInputElement).value) })" /></label>
         </div>
         <label>节点配置<textarea data-testid="node-config" v-model="nodeConfig" rows="10" spellcheck="false" @blur="validateAndEmitConfig" /></label>
         <p v-if="configError" data-testid="config-error" class="pipeline-inspector__invalid">{{ configError }}</p>
