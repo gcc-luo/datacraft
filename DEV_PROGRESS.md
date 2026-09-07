@@ -4,7 +4,7 @@
 V0.4
 
 ## Current Phase
-Phase 6 — Engine API (Completed)
+Phase 7 — Execution Planner (Completed)
 
 ## Repository State
 Initialized modular monolith with datasource management, database metadata browsing, Pipeline control-plane modeling, and a Vue Flow editor; backend, frontend, infrastructure, and CI builds are ready.
@@ -62,16 +62,21 @@ Initialized modular monolith with datasource management, database metadata brows
 - Built-in Native engine registration with embedded deployment metadata and loaded health status
 - Authenticated engine discovery API at `GET /api/v1/engines`
 - Phase 6 backend tests and full Maven test verification
+- Immutable `ExecutionPlan`, `ExecutionStagePlan`, and `DataReference` models
+- Deterministic Pipeline DAG topological planning with engine selection precedence
+- Engine capability and registry validation during planning
+- Database source/sink table references without credential exposure
+- Cross-stage logical query references marked `MATERIALIZATION_REQUIRED`
+- Phase 7 planner tests and full Maven test verification
 
 ## In Progress
 - None
 
 ## Next
-- Phase 7 — Execution Planner
-- Add pipeline validation-to-plan conversion, stages, and DataReference while preserving the control-plane / execution-plane boundary
+- Phase 8 — Native Runtime
+- Add JDBC Source, Filter, SQL pushdown, mapping, and Sink execution while preserving the control-plane / execution-plane boundary
 
 ## Not Started
-- Execution Planner
 - Native Runtime
 - Quality
 - Scheduler
