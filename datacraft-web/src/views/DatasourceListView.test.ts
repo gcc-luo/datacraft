@@ -60,13 +60,38 @@ describe('DatasourceListView', () => {
     await wrapper.get('[data-testid="create-datasource"]').trigger('click')
 
     await wrapper.get('input[name="name"]').setValue('analytics')
+    await wrapper.get('input[name="host"]').setValue('localhost')
+    await wrapper.get('input[name="databaseName"]').setValue('analytics')
+    await wrapper.get('input[name="username"]').setValue('reader')
     await wrapper.get('input[name="password"]').setValue('secret')
+    await wrapper.get('[data-testid="save-datasource"]').trigger('click')
+    expect(createDatasource).not.toHaveBeenCalled()
+
+    await wrapper.get('[data-testid="test-form-datasource"]').trigger('click')
+    expect(testDatasource).toHaveBeenCalledWith(expect.objectContaining({ name: 'analytics', password: 'secret' }), undefined)
     await wrapper.get('form').trigger('submit')
 
     expect(createDatasource).toHaveBeenCalledWith(expect.objectContaining({ name: 'analytics', password: 'secret' }))
 
     await wrapper.get('[data-testid="edit-datasource"]').trigger('click')
     expect((wrapper.get('input[name="password"]').element as HTMLInputElement).value).toBe('')
+  })
+
+  it('requires another successful connection test after changing the form', async () => {
+    const wrapper = mount(DatasourceListView)
+    await vi.waitFor(() => expect(wrapper.text()).toContain('warehouse'))
+    await wrapper.get('[data-testid="create-datasource"]').trigger('click')
+    await wrapper.get('input[name="name"]').setValue('analytics')
+    await wrapper.get('input[name="host"]').setValue('localhost')
+    await wrapper.get('input[name="databaseName"]').setValue('analytics')
+    await wrapper.get('input[name="username"]').setValue('reader')
+    await wrapper.get('input[name="password"]').setValue('secret')
+    await wrapper.get('[data-testid="test-form-datasource"]').trigger('click')
+
+    expect((wrapper.get('[data-testid="save-datasource"]').element as HTMLButtonElement).disabled).toBe(false)
+    await wrapper.get('input[name="host"]').setValue('db.internal')
+
+    expect((wrapper.get('[data-testid="save-datasource"]').element as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('tests and deletes a saved datasource after confirmation', async () => {

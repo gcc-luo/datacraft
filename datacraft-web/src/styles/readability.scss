@@ -1,0 +1,113 @@
+/* Shared readability baseline. Keep this file loaded after page-specific styles. */
+:root {
+  color: #243453;
+  font-family: "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-kerning: normal;
+  font-synthesis: weight style;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html { text-size-adjust: 100%; }
+body { font-size: 14px; line-height: 1.5; }
+button, input, select, textarea { font-family: inherit; }
+
+/* The original UI used 9–12px text extensively. These values keep secondary
+   information compact while giving Chinese glyphs enough pixels to render well. */
+.app-nav__item { color: #c1cce0; font-size: 14px; }
+.app-header h1 { font-size: 21px; letter-spacing: normal; }
+.app-header__eyebrow { font-size: 10px; }
+.user-menu { color: #52627e; font-size: 14px; }
+.user-menu button { color: #687792; font-size: 13px; }
+.page-heading h2 { font-size: 29px; letter-spacing: normal; }
+.page-heading p:not(.page-heading__eyebrow) { color: #6c7a94; font-size: 14px; }
+.page-heading__eyebrow, .login-brand__eyebrow, .login-card__eyebrow { font-size: 11px; }
+.section-heading h3 { font-size: 16px; letter-spacing: normal; }
+.section-heading p { color: #6f7e98; font-size: 13px; }
+.primary-action, .quiet-action, .secondary-action { font-size: 13px; }
+.inline-notice, .inline-error { font-size: 13px; }
+
+.metric-card span, .metric-card small { color: #6f7e98; font-size: 13px; }
+.execution-info strong { font-size: 14px; }
+.execution-info span { color: #6f7e98; font-size: 12px; }
+.execution-state { font-size: 11px; }
+.placeholder-view { color: #6f7e98; font-size: 13px; }
+.placeholder-view h2 { letter-spacing: normal; }
+.placeholder-view p:not(.page-heading__eyebrow) { color: #6f7e98; font-size: 14px; }
+
+.datasource-table, .pipeline-table { color: #53637e; font-size: 13px; }
+.datasource-table th, .pipeline-table th { color: #687792; font-size: 12px; letter-spacing: .04em; }
+.datasource-table td small, .pipeline-table td small { color: #71809a; font-size: 11px; }
+.type-badge, .pipeline-strategy { font-size: 11px; }
+.datasource-status, .pipeline-status { font-size: 12px; }
+.datasource-actions button, .pipeline-actions a, .pipeline-actions button { font-size: 12px; }
+.test-result { font-size: 13px; }
+.datasource-form label { font-size: 13px; }
+.datasource-form input, .datasource-form select, .datasource-form textarea { font-size: 13px; }
+.datasource-form small { color: #71809a; font-size: 11px; }
+.datasource-modal__panel h3 { letter-spacing: normal; }
+.datasource-modal__panel .section-heading p:last-child { color: #6f7e98; font-size: 13px; }
+.datasource-modal__eyebrow { font-size: 10px; }
+.datasource-form__hint, .form-test-result { font-size: 12px; }
+
+.asset-toolbar label, .asset-browser__sidebar-head, .asset-detail-heading__source { font-size: 12px; }
+.asset-toolbar select, .asset-toolbar input { font-size: 13px; }
+.asset-toolbar__stats, .asset-browser__sidebar-head small { color: #71809a; font-size: 12px; }
+.asset-toolbar__stats strong { font-size: 21px; }
+.asset-schema h3 { color: #687792; font-size: 11px; }
+.asset-schema h3 small { font-size: 10px; }
+.asset-table-item strong { font-size: 13px; }
+.asset-table-item small { color: #71809a; font-size: 11px; }
+.asset-browser__no-results, .asset-breadcrumb { color: #71809a; font-size: 12px; }
+.asset-detail-heading h3 { font-size: 26px; letter-spacing: normal; }
+.asset-detail-heading p:not(.page-heading__eyebrow), .asset-fields .section-heading p { color: #71809a; font-size: 12px; }
+.asset-metrics span { color: #71809a; font-size: 11px; }
+.asset-fields h4 { font-size: 15px; }
+.asset-fields table { font-size: 12px; }
+.asset-fields th { color: #71809a; font-size: 10px; }
+.asset-fields td strong { font-size: 13px; }
+.asset-fields code, .field-key { font-size: 11px; }
+
+.quality-run-card__heading span, .quality-result__rule { font-size: 10px; }
+.quality-run-card__heading h3 { font-size: 18px; }
+.quality-run-card__heading small { color: #71809a; font-size: 11px; }
+.quality-form label { font-size: 12px; }
+.quality-form input, .quality-form select { font-size: 13px; }
+.quality-results-card .section-heading p { color: #71809a; font-size: 12px; }
+.quality-results-card__count { font-size: 11px; }
+.quality-empty { color: #71809a; font-size: 12px; }
+.quality-result__top h4 { font-size: 18px; }
+.quality-result__status { font-size: 11px; }
+.quality-metrics span { color: #71809a; font-size: 11px; }
+.quality-result__samples-head { font-size: 12px; }
+.quality-result__samples-head small, .quality-no-samples { color: #71809a; font-size: 11px; }
+.quality-sample-row code { font-size: 11px; }
+
+/* Dark Pipeline editor: increase text size without weakening its contrast. */
+.pipeline-editor__identity p { font-size: 11px; }
+.pipeline-editor__state, .pipeline-editor__actions button { font-size: 12px; }
+.pipeline-editor__error, .pipeline-editor__notice { font-size: 13px; }
+.pipeline-panel-kicker, .pipeline-palette__group-title { font-size: 10px; }
+.pipeline-palette__heading h2, .pipeline-inspector h2 { letter-spacing: normal; }
+.pipeline-palette__heading p, .pipeline-search input, .pipeline-palette__empty { font-size: 12px; }
+.pipeline-palette__group-title small { font-size: 11px; }
+.pipeline-palette__item strong { font-size: 13px; }
+.pipeline-palette__item small { color: #8b9bc0; font-size: 11px; }
+.pipeline-palette__hint span, .pipeline-canvas__label, .pipeline-inspector__kicker { font-size: 10px; }
+.pipeline-palette__hint p, .pipeline-canvas__empty, .pipeline-inspector__sub { font-size: 12px; }
+.pipeline-canvas__empty strong { font-size: 15px; }
+.pipeline-node__topline { font-size: 9px; }
+.pipeline-node__body > strong { font-size: 14px; }
+.pipeline-node__body > small { color: #91a2c8; font-size: 11px; }
+.pipeline-inspector label { font-size: 11px; }
+.pipeline-inspector input, .pipeline-inspector textarea, .pipeline-inspector select { font-size: 12px; }
+.pipeline-inspector__hint, .pipeline-inspector__empty { font-size: 11px; }
+.pipeline-inspector__invalid, .pipeline-inspector__delete { font-size: 12px; }
+.pipeline-inspector__empty strong { font-size: 15px; }
+
+@media (prefers-contrast: more) {
+  :root { color: #17213a; }
+  .page-heading p:not(.page-heading__eyebrow), .section-heading p, .asset-table-item small,
+  .datasource-table td small, .pipeline-table td small, .quality-empty { color: #53637e; }
+}

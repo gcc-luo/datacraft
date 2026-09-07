@@ -53,7 +53,13 @@ public class DatasourceController {
     }
 
     @PostMapping("/{id}/test")
-    public ApiResponse<DatasourceTestResponse> testConnection(@PathVariable Long id) {
-        return ApiResponse.success(service.testConnection(id));
+    public ApiResponse<DatasourceTestResponse> testConnection(@PathVariable Long id,
+                                                               @Valid @RequestBody(required = false) DatasourceRequest request) {
+        return ApiResponse.success(service.testConnection(id, request));
+    }
+
+    @PostMapping("/test")
+    public ApiResponse<DatasourceTestResponse> testConnection(@Valid @RequestBody DatasourceRequest request) {
+        return ApiResponse.success(service.testConnection(request));
     }
 }

@@ -26,7 +26,13 @@ export async function deleteDatasource(id: number): Promise<void> {
   await http.delete<ApiResponse<void>>(`/v1/datasources/${id}`)
 }
 
-export async function testDatasource(id: number): Promise<DatasourceTestResponse> {
-  const response = await http.post<ApiResponse<DatasourceTestResponse>>(`/v1/datasources/${id}/test`)
+export async function testDatasource(id: number): Promise<DatasourceTestResponse>
+export async function testDatasource(request: DatasourceRequest, id?: number): Promise<DatasourceTestResponse>
+export async function testDatasource(input: number | DatasourceRequest, id?: number): Promise<DatasourceTestResponse> {
+  const url = typeof input === 'number'
+    ? `/v1/datasources/${input}/test`
+    : id === undefined ? '/v1/datasources/test' : `/v1/datasources/${id}/test`
+  const body = typeof input === 'number' ? undefined : input
+  const response = await http.post<ApiResponse<DatasourceTestResponse>>(url, body)
   return unwrap(response.data)
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { createDatasource, deleteDatasource, listDatasources, testDatasource, updateDatasource } from '../api/datasources'
 import type { DatasourceRequest, DatasourceResponse, DatasourceTestResponse, DatasourceType } from '../types/datasource'
 
@@ -11,9 +11,14 @@ const saving = ref(false)
 const formOpen = ref(false)
 const editingId = ref<number | null>(null)
 const testingId = ref<number | null>(null)
+const formTesting = ref(false)
 const errorMessage = ref('')
+const formErrorMessage = ref('')
 const notice = ref('')
-const testResult = ref<DatasourceTestResponse | null>(null)
+const rowTestResult = ref<DatasourceTestResponse | null>(null)
+const formTestResult = ref<DatasourceTestResponse | null>(null)
+const testedFormSignature = ref('')
+const formElement = ref<HTMLFormElement | null>(null)
 const form = reactive<DatasourceForm>(emptyForm())
 
 function emptyForm(): DatasourceForm {
@@ -35,7 +40,9 @@ async function loadRows() {
 function startCreate() {
   editingId.value = null
   Object.assign(form, emptyForm())
-  testResult.value = null
+  formTestResult.value = null
+  testedFormSignature.value = ''
+  formErrorMessage.value = ''
   notice.value = ''
   formOpen.value = true
 }
@@ -52,7 +59,9 @@ function startEdit(row: DatasourceResponse) {
     password: '',
     remark: row.remark || '',
   })
-  testResult.value = null
+  formTestResult.value = null
+  testedFormSignature.value = ''
+  formErrorMessage.value = ''
   notice.value = ''
   formOpen.value = true
 }
@@ -62,6 +71,7 @@ function closeForm() {
 }
 
 async function save() {
+  if (!canSave.value) return
   saving.value = true
   errorMessage.value = ''
   notice.value = ''
@@ -87,7 +97,7 @@ async function testConnection(row: DatasourceResponse) {
   testingId.value = row.id
   errorMessage.value = ''
   try {
-    testResult.value = await testDatasource(row.id)
+    rowTestResult.value = await testDatasource(row.id)
     await loadRows()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '连接测试失败'
@@ -95,6 +105,39 @@ async function testConnection(row: DatasourceResponse) {
     testingId.value = null
   }
 }
+
+function formSignature() {
+  return JSON.stringify(form)
+}
+
+function formPayload(): DatasourceRequest {
+  return { ...form, password: form.password?.trim() || undefined }
+}
+
+function invalidateConnectionTest() {
+  if (formTestResult.value) {
+    formTestResult.value = null
+    testedFormSignature.value = ''
+  }
+}
+
+async function testFormConnection() {
+  if (!formElement.value?.reportValidity()) return
+  formTesting.value = true
+  formErrorMessage.value = ''
+  formTestResult.value = null
+  try {
+    formTestResult.value = await testDatasource(formPayload(), editingId.value ?? undefined)
+    if (formTestResult.value.success) testedFormSignature.value = formSignature()
+  } catch (error) {
+    formErrorMessage.value = error instanceof Error ? error.message : '连接测试失败'
+    testedFormSignature.value = ''
+  } finally {
+    formTesting.value = false
+  }
+}
+
+const canSave = computed(() => formTestResult.value?.success === true && testedFormSignature.value === formSignature())
 
 async function remove(row: DatasourceResponse) {
   if (!window.confirm(`确定删除数据源“${row.name}”吗？`)) return
@@ -152,21 +195,25 @@ onMounted(loadRows)
       </table>
     </section>
 
-    <section v-if="testResult" class="test-result" :class="{ 'test-result--failed': !testResult.success }"><strong>{{ testResult.message }}</strong><span v-if="testResult.success">耗时 {{ testResult.latencyMs }} ms</span></section>
+    <section v-if="rowTestResult" class="test-result" :class="{ 'test-result--failed': !rowTestResult.success }"><strong>{{ rowTestResult.message }}</strong><span v-if="rowTestResult.success">耗时 {{ rowTestResult.latencyMs }} ms</span></section>
 
-    <section v-if="formOpen" class="datasource-form-card">
-      <div class="section-heading"><div><h3>{{ editingId === null ? '新建数据源' : '编辑数据源' }}</h3><p>只支持 PostgreSQL 和 MySQL JDBC 连接。</p></div><button type="button" class="quiet-action" @click="closeForm">关闭</button></div>
-      <form class="datasource-form" @submit.prevent="save">
+    <div v-if="formOpen" class="datasource-modal" role="presentation" @click.self="closeForm" @keydown.esc="closeForm">
+      <section class="datasource-modal__panel" role="dialog" aria-modal="true" aria-labelledby="datasource-modal-title" tabindex="-1">
+        <div class="section-heading"><div><p class="datasource-modal__eyebrow">DATA SOURCE CONFIGURATION</p><h3 id="datasource-modal-title">{{ editingId === null ? '新建数据源' : '编辑数据源' }}</h3><p>填写连接信息，测试成功后才能保存。</p></div><button type="button" class="quiet-action" aria-label="关闭弹框" @click="closeForm">关闭</button></div>
+        <div v-if="formErrorMessage" class="inline-error">{{ formErrorMessage }}</div>
+        <form ref="formElement" class="datasource-form" @input="invalidateConnectionTest" @change="invalidateConnectionTest" @submit.prevent="save">
         <label>名称<input v-model="form.name" name="name" required maxlength="100" placeholder="例如：客户库" /></label>
         <label>类型<select v-model="form.type" name="type"><option value="POSTGRESQL">PostgreSQL</option><option value="MYSQL">MySQL</option></select></label>
         <label>主机<input v-model="form.host" name="host" required placeholder="localhost" /></label>
         <label>端口<input v-model.number="form.port" name="port" type="number" min="1" max="65535" required /></label>
         <label>数据库<input v-model="form.databaseName" name="databaseName" required /></label>
         <label>用户名<input v-model="form.username" name="username" required /></label>
-        <label class="datasource-form__wide">密码<input v-model="form.password" name="password" type="password" :required="editingId === null" autocomplete="new-password" /><small>{{ editingId === null ? '密码仅用于连接测试，并以密文保存。' : '留空则保留原密码。' }}</small></label>
+        <label class="datasource-form__wide">密码<input v-model="form.password" name="password" type="password" :required="editingId === null" autocomplete="new-password" /><small>{{ editingId === null ? '密码仅用于连接测试，并以密文保存。' : '留空则使用已保存密码测试并保留原密码。' }}</small></label>
         <label class="datasource-form__wide">备注<textarea v-model="form.remark" name="remark" rows="2" maxlength="500"></textarea></label>
-        <div class="datasource-form__actions"><button class="quiet-action" type="button" @click="closeForm">取消</button><button class="primary-action" type="submit" :disabled="saving">{{ saving ? '保存中…' : '保存数据源' }}</button></div>
-      </form>
-    </section>
+          <div v-if="formTestResult" class="form-test-result" :class="{ 'form-test-result--failed': !formTestResult.success }"><strong>{{ formTestResult.message }}</strong><span v-if="formTestResult.success">耗时 {{ formTestResult.latencyMs }} ms</span></div>
+          <div class="datasource-form__actions"><span v-if="!canSave" class="datasource-form__hint">请先测试连接，成功后才能保存</span><button class="quiet-action" type="button" @click="closeForm">取消</button><button class="secondary-action" data-testid="test-form-datasource" type="button" :disabled="formTesting || saving" @click="testFormConnection">{{ formTesting ? '测试中…' : '测试连接' }}</button><button class="primary-action" data-testid="save-datasource" type="submit" :disabled="saving || formTesting || !canSave">{{ saving ? '保存中…' : '保存数据源' }}</button></div>
+        </form>
+      </section>
+    </div>
   </div>
 </template>

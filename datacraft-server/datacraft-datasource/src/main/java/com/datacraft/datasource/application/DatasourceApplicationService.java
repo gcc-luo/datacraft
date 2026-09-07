@@ -85,12 +85,49 @@ public class DatasourceApplicationService {
 
     public DatasourceTestResponse testConnection(Long id) {
         Datasource current = require(id);
-        ConnectionTestOutcome outcome = connectionTester.test(current, crypto.decrypt(current.passwordCiphertext()));
+        DatasourceTestResponse result = testConnection(current, crypto.decrypt(current.passwordCiphertext()));
+        repository.save(current.withTestResult(result.status(), result.testedAt(), result.latencyMs(), result.message()));
+        return result;
+    }
+
+    public DatasourceTestResponse testConnection(DatasourceRequest request) {
+        String password = requiredPassword(request.password());
+        return testConnection(toCandidate(request, null), password);
+    }
+
+    public DatasourceTestResponse testConnection(Long id, DatasourceRequest request) {
+        if (request == null) {
+            return testConnection(id);
+        }
+        Datasource current = require(id);
+        String password = request.password() == null || request.password().isBlank()
+                ? crypto.decrypt(current.passwordCiphertext()) : request.password();
+        return testConnection(toCandidate(request, current), password);
+    }
+
+    private DatasourceTestResponse testConnection(Datasource datasource, String password) {
+        ConnectionTestOutcome outcome = connectionTester.test(datasource, password);
         Instant testedAt = Instant.now(clock);
         DatasourceStatus status = outcome.success() ? DatasourceStatus.SUCCESS : DatasourceStatus.FAILED;
         String message = outcome.success() ? SUCCESS_MESSAGE : FAILURE_MESSAGE;
-        repository.save(current.withTestResult(status, testedAt, outcome.latencyMs(), message));
         return new DatasourceTestResponse(outcome.success(), status, outcome.latencyMs(), message, testedAt);
+    }
+
+    private Datasource toCandidate(DatasourceRequest request, Datasource current) {
+        Instant createdAt = current == null ? Instant.now(clock) : current.createdAt();
+        return new Datasource(current == null ? null : current.id(), clean(request.name()), request.type(), clean(request.host()),
+                request.port(), clean(request.databaseName()), clean(request.username()),
+                current == null ? null : current.passwordCiphertext(), cleanNullable(request.remark()),
+                current == null ? DatasourceStatus.UNKNOWN : current.status(),
+                current == null ? null : current.lastTestedAt(), current == null ? null : current.lastTestLatencyMs(),
+                current == null ? null : current.lastTestMessage(), createdAt, current == null ? createdAt : current.updatedAt());
+    }
+
+    private String requiredPassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new DatasourceValidationException("数据源密码不能为空");
+        }
+        return password;
     }
 
     private Datasource require(Long id) {

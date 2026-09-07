@@ -7,6 +7,7 @@ import router from './router'
 import './styles/main.scss'
 import './styles/pipeline.scss'
 import './styles/quality.scss'
+import './styles/readability.scss'
 
 import { pinia } from './stores/pinia'
 

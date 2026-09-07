@@ -2,7 +2,9 @@ package com.datacraft.datasource.web;
 
 import com.datacraft.api.datasource.DatasourceResponse;
 import com.datacraft.api.datasource.DatasourceStatus;
+import com.datacraft.api.datasource.DatasourceTestResponse;
 import com.datacraft.api.datasource.DatasourceType;
+import com.datacraft.api.datasource.DatasourceRequest;
 import com.datacraft.datasource.application.DatasourceApplicationService;
 import com.datacraft.datasource.application.DatasourceDuplicateException;
 import com.datacraft.datasource.application.DatasourceNotFoundException;
@@ -25,6 +27,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -80,6 +83,21 @@ class DatasourceControllerTest {
                         .content("{\"name\":\"warehouse\",\"type\":\"POSTGRESQL\",\"host\":\"localhost\",\"port\":5432,\"databaseName\":\"db\",\"username\":\"u\",\"password\":\"p\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("DATASOURCE_DUPLICATE"));
+    }
+
+    @Test
+    @WithMockUser
+    void testsUnsavedDatasourceConfiguration() throws Exception {
+        when(service.testConnection(any(DatasourceRequest.class))).thenReturn(
+                new DatasourceTestResponse(true, DatasourceStatus.SUCCESS, 12L, "连接成功",
+                        Instant.parse("2026-09-07T02:00:00Z")));
+
+        mockMvc.perform(post("/api/v1/datasources/test")
+                        .contentType("application/json")
+                        .content("{\"name\":\"warehouse\",\"type\":\"POSTGRESQL\",\"host\":\"localhost\",\"port\":5432,\"databaseName\":\"db\",\"username\":\"u\",\"password\":\"p\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.success").value(true))
+                .andExpect(jsonPath("$.data.status").value("SUCCESS"));
     }
 
     @TestConfiguration

@@ -89,6 +89,12 @@ Modular monolith with datasource management, metadata browsing, Pipeline modelin
 - Quality result page with quick NULL check, metrics, status, and error sample display
 - Quality node metadata registered for Native Pipeline editor support
 - Phase 9 quality backend and frontend tests and production build verification
+- Fixed NativePipelineExecutor Spring constructor injection and verified backend startup after rebuild
+- Replaced sidebar menu initial-letter placeholders with semantic SVG icons and a generic fallback icon
+- Datasource create/edit moved into modal form with unsaved configuration testing and save gating
+- Added temporary datasource connection-test APIs, edit password reuse, and frontend regression coverage
+- Added shared frontend readability baseline with system font fallback, clearer contrast, and larger UI text
+- Increased datasource and Pipeline list header text to 12px for clearer scanning
 
 ## In Progress
 - None

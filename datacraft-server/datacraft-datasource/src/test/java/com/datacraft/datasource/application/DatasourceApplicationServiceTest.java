@@ -91,6 +91,38 @@ class DatasourceApplicationServiceTest {
     }
 
     @Test
+    void testsUnsavedConfigurationWithoutPersistingIt() {
+        DatasourceRequest request = request("warehouse", "secret");
+        when(connectionTester.test(any(Datasource.class), eq("secret")))
+                .thenReturn(ConnectionTestOutcome.success(18));
+
+        var result = service.testConnection(request);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.status()).isEqualTo(DatasourceStatus.SUCCESS);
+        assertThat(result.latencyMs()).isEqualTo(18);
+        verify(repository, never()).save(any());
+        verify(crypto, never()).encrypt(any());
+    }
+
+    @Test
+    void testsEditedConfigurationWithExistingPasswordWhenPasswordIsBlank() {
+        Datasource existing = datasource(7L, "warehouse", "v1:cipher");
+        DatasourceRequest request = request("warehouse-v2", " ");
+        when(repository.findById(7L)).thenReturn(Optional.of(existing));
+        when(crypto.decrypt("v1:cipher")).thenReturn("secret");
+        when(connectionTester.test(any(Datasource.class), eq("secret")))
+                .thenReturn(ConnectionTestOutcome.success(21));
+
+        var result = service.testConnection(7L, request);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.latencyMs()).isEqualTo(21);
+        verify(repository, never()).save(any());
+        verify(crypto, never()).encrypt(any());
+    }
+
+    @Test
     void failsWhenDatasourceDoesNotExist() {
         when(repository.findById(404L)).thenReturn(Optional.empty());
 
