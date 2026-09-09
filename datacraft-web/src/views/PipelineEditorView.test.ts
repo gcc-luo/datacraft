@@ -82,4 +82,20 @@ describe('PipelineEditorView', () => {
     expect(deletePipeline).toHaveBeenCalledWith(7)
     await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/pipelines'))
   })
+
+  it('closes and reopens the modal inspector without changing the canvas', async () => {
+    const { wrapper } = await mountView()
+    await vi.waitFor(() => expect(wrapper.text()).toContain('新建 Pipeline'))
+
+    expect(wrapper.get('[data-testid="inspector-modal"]').attributes('role')).toBe('dialog')
+    await wrapper.get('[data-testid="inspector-close"]').trigger('click')
+    expect(wrapper.find('[data-testid="inspector-modal"]').exists()).toBe(false)
+    expect(wrapper.get('[data-testid="inspector-open"]').text()).toContain('属性')
+
+    await wrapper.get('[data-testid="inspector-open"]').trigger('click')
+    expect(wrapper.find('[data-testid="inspector-modal"]').exists()).toBe(true)
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    await vi.waitFor(() => expect(wrapper.find('[data-testid="inspector-modal"]').exists()).toBe(false))
+  })
 })

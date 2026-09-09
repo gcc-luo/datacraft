@@ -23,6 +23,7 @@ const emit = defineEmits<{
   'update:pipeline': [value: Partial<InspectorPipeline>]
   'update:selected-node': [value: PipelineNodePatch]
   'delete-node': []
+  close: []
 }>()
 
 const nodeConfig = ref('{}')
@@ -60,9 +61,15 @@ function validateAndEmitConfig() {
 </script>
 
 <template>
-  <aside class="pipeline-inspector" aria-label="属性检查器">
+  <aside class="pipeline-inspector" data-testid="pipeline-inspector" aria-label="属性检查器">
+    <header class="pipeline-inspector__header">
+      <div class="pipeline-inspector__header-copy">
+        <div class="pipeline-inspector__kicker">{{ selectedNode ? '节点设置' : 'PIPELINE SETTINGS' }}</div>
+        <span>属性检查器</span>
+      </div>
+      <button class="pipeline-inspector__close" data-testid="inspector-close" type="button" aria-label="关闭属性检查器" @click="emit('close')">×</button>
+    </header>
     <template v-if="selectedNode">
-      <div class="pipeline-inspector__kicker">NODE INSPECTOR</div>
       <h2>{{ selectedNode.nodeName }}</h2>
       <p class="pipeline-inspector__sub">{{ selectedNode.nodeType }} · {{ selectedNode.nodeKey }}</p>
       <div class="pipeline-inspector__form">
@@ -79,7 +86,6 @@ function validateAndEmitConfig() {
       </div>
     </template>
     <template v-else>
-      <div class="pipeline-inspector__kicker">PIPELINE SETTINGS</div>
       <h2>管道属性</h2>
       <p class="pipeline-inspector__sub">选择画布节点查看节点配置，或先完善管道基本信息。</p>
       <div class="pipeline-inspector__form">

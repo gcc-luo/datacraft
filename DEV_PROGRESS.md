@@ -105,6 +105,10 @@ Modular monolith with system administration, datasource management, metadata bro
 - Added shared frontend pagination for datasource, asset/table fields, Pipeline, quality, and system user/role/menu lists
 - Added page-size switching, boundary-safe page navigation, and reset-to-first-page behavior after asset filtering or selection changes
 - Verified frontend with 35 Vitest tests and a successful production build
+- Optimized Pipeline editor palette scrolling, added resizable/collapsible attribute inspector, and localized canvas category labels
+- Verified frontend with 37 Vitest tests and a successful production build
+- Reworked Pipeline attribute inspector from a right-side panel into a centered modal dialog with close, backdrop, and Escape interactions
+- Verified modal inspector changes with 37 Vitest tests and a successful production build
 
 ## In Progress
 - None

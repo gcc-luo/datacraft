@@ -17,6 +17,7 @@ describe('PipelinePalette', () => {
     expect(wrapper.text()).toContain('数据库源')
     expect(wrapper.text()).toContain('处理')
     expect(wrapper.text()).toContain('提示')
+    expect(wrapper.get('[data-testid="palette-scroll-region"]').attributes('aria-label')).toBe('组件节点列表')
 
     await wrapper.get('[data-testid="palette-search"]').setValue('filter')
     expect(wrapper.text()).toContain('数据筛选')

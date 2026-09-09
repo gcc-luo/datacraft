@@ -6,7 +6,7 @@ import type { NodeProps } from '@vue-flow/core'
 const props = defineProps<NodeProps<PipelineNodeData>>()
 
 const categoryLabels: Record<NodeCategory, string> = {
-  SOURCE: 'SOURCE', TRANSFORM: 'TRANSFORM', QUALITY: 'QUALITY', GOVERNANCE: 'GOVERNANCE', SINK: 'SINK', UTILITY: 'UTILITY',
+  SOURCE: '数据源', TRANSFORM: '处理', QUALITY: '质量', GOVERNANCE: '治理', SINK: '输出', UTILITY: '工具',
 }
 
 function categoryClass() {

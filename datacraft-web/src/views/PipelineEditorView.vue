@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, shallowRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow } from '@vue-flow/core'
 import type { Connection } from '@vue-flow/core'
@@ -36,6 +36,7 @@ const saving = ref(false)
 const dirty = ref(false)
 const errorMessage = ref('')
 const notice = ref('')
+const inspectorOpen = ref(true)
 
 const selectedNode = computed<(PipelineNodeData & { position: { x: number; y: number } }) | null>(() => {
   const node = nodes.value.find((item) => item.id === selectedNodeId.value)
@@ -96,6 +97,7 @@ function updateSelectedNode(patch: PipelineNodePatch) {
 function onNodeClick(payload: { node?: PipelineCanvasNode } | PipelineCanvasNode) {
   const node = 'id' in payload ? payload : payload.node
   selectedNodeId.value = node?.id || null
+  inspectorOpen.value = true
 }
 
 function nodeKeyFor(type: string) {
@@ -115,6 +117,7 @@ function dropNode(event: DragEvent) {
   ;(node.data as PipelineNodeData).metadata = metadata
   nodes.value = [...nodes.value, node]
   selectedNodeId.value = node.id
+  inspectorOpen.value = true
   markDirty()
 }
 
@@ -173,7 +176,23 @@ function goBack() {
   router.push({ name: 'pipelines' })
 }
 
-onMounted(loadEditor)
+function closeInspector() {
+  inspectorOpen.value = false
+}
+
+function openInspector() {
+  inspectorOpen.value = true
+}
+
+function onInspectorKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && inspectorOpen.value) closeInspector()
+}
+
+onMounted(() => {
+  loadEditor()
+  window.addEventListener('keydown', onInspectorKeydown)
+})
+onBeforeUnmount(() => window.removeEventListener('keydown', onInspectorKeydown))
 </script>
 
 <template>
@@ -187,6 +206,7 @@ onMounted(loadEditor)
       <div class="pipeline-editor__state" :class="{ 'pipeline-editor__dirty': dirty }"><i class="pipeline-editor__state-dot"></i>{{ dirty ? '有未保存修改' : '已同步' }}</div>
       <div class="pipeline-editor__actions">
         <button data-testid="delete-pipeline" type="button" @click="removeEditor">删除</button>
+        <button v-if="!inspectorOpen" class="pipeline-editor__inspector-open" data-testid="inspector-open" type="button" @click="openInspector">属性检查器</button>
         <button class="pipeline-editor__save" data-testid="save-pipeline" type="button" :disabled="saving || loading" @click="saveEditor">{{ saving ? '保存中…' : '保存' }}</button>
       </div>
     </header>
@@ -200,6 +220,8 @@ onMounted(loadEditor)
       <VueFlow v-model:nodes="nodes" v-model:edges="edges" :node-types="nodeTypes" fit-view-on-init @node-click="onNodeClick" @connect="onConnect">
       </VueFlow>
     </section>
-    <PipelineInspector :pipeline="pipeline" :selected-node="selectedNode" :node-metadata="nodeMetadata" @update:pipeline="updatePipelineProperties" @update:selected-node="updateSelectedNode" @delete-node="removeSelectedNode" />
+    <div v-if="inspectorOpen" class="pipeline-inspector-modal" data-testid="inspector-modal" role="dialog" aria-modal="true" aria-label="Pipeline 属性检查器" @click.self="closeInspector">
+      <PipelineInspector :pipeline="pipeline" :selected-node="selectedNode" :node-metadata="nodeMetadata" @update:pipeline="updatePipelineProperties" @update:selected-node="updateSelectedNode" @delete-node="removeSelectedNode" @close="closeInspector" />
+    </div>
   </div>
 </template>

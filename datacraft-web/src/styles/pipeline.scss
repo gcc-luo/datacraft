@@ -44,3 +44,36 @@
   .pipeline-editor-page > .pipeline-canvas { grid-column: 1; grid-row: 3; }
   .pipeline-editor-page > .pipeline-inspector { grid-column: 1; grid-row: 4; }
 }
+
+/* Workspace panels: keep palette content scrollable and present the inspector as a modal dialog. */
+.pipeline-editor-page { grid-template-columns: 240px minmax(0, 1fr); }
+.pipeline-palette { min-width: 0; }
+.pipeline-palette__groups { min-height: 0; scrollbar-color: rgb(118 144 205 / 46%) transparent; scrollbar-gutter: stable; scrollbar-width: thin; overscroll-behavior: contain; }
+.pipeline-palette__groups::-webkit-scrollbar { width: 7px; height: 7px; }
+.pipeline-palette__groups::-webkit-scrollbar-track { background: transparent; }
+.pipeline-palette__groups::-webkit-scrollbar-thumb { border: 2px solid transparent; border-radius: 999px; background: rgb(118 144 205 / 46%); background-clip: padding-box; }
+.pipeline-palette__groups::-webkit-scrollbar-thumb:hover { background: rgb(166 190 245 / 68%); background-clip: padding-box; }
+.pipeline-inspector-modal { position: absolute; z-index: 10; inset: 70px 0 0; display: grid; place-items: center; padding: 28px; background: rgb(7 14 34 / 62%); backdrop-filter: blur(4px); animation: pipeline-inspector-modal-enter .18s ease-out; }
+.pipeline-inspector { grid-column: auto; grid-row: auto; width: min(560px, 100%); max-height: min(720px, calc(100vh - 130px)); min-width: 0; padding: 28px; overflow: auto; border: 1px solid #dce4f0; border-radius: 18px; background: #f4f7fb; box-shadow: 0 24px 72px rgb(4 12 34 / 34%), 0 0 0 1px rgb(255 255 255 / 24%); }
+.pipeline-inspector__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e1e7f0; }
+.pipeline-inspector__header-copy { display: grid; gap: 7px; }
+.pipeline-inspector__header-copy > span { color: #344363; font-size: 12px; font-weight: 750; }
+.pipeline-inspector__close { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border: 1px solid #d7e0ed; border-radius: 8px; color: #66748e; background: #fff; font-size: 21px; line-height: 1; }
+.pipeline-inspector__close:hover { border-color: #8ea6dc; color: #3658a5; background: #f5f7ff; }
+.pipeline-editor__inspector-open { border-color: rgb(180 198 245 / 26%) !important; color: #cbd8fa !important; background: rgb(255 255 255 / 4%) !important; }
+.pipeline-editor__inspector-open:hover { border-color: rgb(180 198 245 / 48%) !important; color: #fff !important; background: rgb(255 255 255 / 8%) !important; }
+@keyframes pipeline-inspector-modal-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pipeline-inspector-panel-enter { from { transform: translateY(10px) scale(.985); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+.pipeline-inspector-modal .pipeline-inspector { animation: pipeline-inspector-panel-enter .2s ease-out; }
+
+@media (max-width: 1050px) {
+  .pipeline-editor-page { grid-template-columns: 210px minmax(0, 1fr); }
+  .pipeline-inspector { min-width: 0; }
+}
+
+@media (max-width: 800px) {
+  .pipeline-editor-page { grid-template-columns: minmax(0, 1fr); }
+  .pipeline-palette__groups { scrollbar-gutter: auto; }
+  .pipeline-inspector-modal { inset: 115px 0 0; align-items: start; padding: 18px; }
+  .pipeline-inspector { max-height: calc(100vh - 145px); padding: 22px 18px; border-radius: 14px; }
+}

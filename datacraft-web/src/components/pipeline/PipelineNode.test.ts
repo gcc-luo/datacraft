@@ -22,6 +22,7 @@ describe('PipelineNode', () => {
 
     expect(wrapper.text()).toContain('Customer DB')
     expect(wrapper.text()).toContain('source')
+    expect(wrapper.text()).toContain('数据源')
     expect(wrapper.text()).toContain('NATIVE')
     expect(wrapper.findAll('.vue-flow__handle')).toHaveLength(2)
   })

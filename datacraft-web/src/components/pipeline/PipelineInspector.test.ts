@@ -49,4 +49,13 @@ describe('PipelineInspector', () => {
     expect(wrapper.get('[data-testid="config-error"]').text()).toContain('JSON')
     expect(wrapper.emitted('update:selected-node')).toBeUndefined()
   })
+
+  it('provides a close control for the modal inspector', async () => {
+    const wrapper = mount(PipelineInspector, { props: { pipeline, selectedNode: null, nodeMetadata: metadata } })
+
+    expect(wrapper.get('[data-testid="inspector-close"]').attributes('aria-label')).toContain('关闭')
+    await wrapper.get('[data-testid="inspector-close"]').trigger('click')
+
+    expect(wrapper.emitted('close')).toHaveLength(1)
+  })
 })

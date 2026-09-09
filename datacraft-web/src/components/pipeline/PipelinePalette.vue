@@ -34,7 +34,7 @@ function startDrag(event: DragEvent, item: NodeMetadataResponse) {
     <div class="pipeline-panel-kicker">节点库 <span>{{ metadata.length }}</span></div>
     <div class="pipeline-palette__heading"><h2>组件库</h2><p>拖入画布开始编排</p></div>
     <label class="pipeline-search"><span>⌕</span><input v-model="search" data-testid="palette-search" type="search" placeholder="搜索节点" /></label>
-    <div class="pipeline-palette__groups">
+    <div class="pipeline-palette__groups" data-testid="palette-scroll-region" aria-label="组件节点列表">
       <section v-for="group in groups" :key="group.category" class="pipeline-palette__group">
         <div class="pipeline-palette__group-title"><span>{{ group.label }}</span><small>{{ group.items.length }}</small></div>
         <button v-for="item in group.items" :key="item.type" :data-testid="`palette-${item.type}`" class="pipeline-palette__item" type="button" draggable="true" @dragstart="startDrag($event, item)">
