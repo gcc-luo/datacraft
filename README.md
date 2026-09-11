@@ -41,7 +41,7 @@ scripts/                  工程脚本预留
 mvn spring-boot:run -pl datacraft-server/datacraft-bootstrap -am
 ```
 
-后端健康检查：`http://localhost:8080/actuator/health`。
+后端健康检查：`http://localhost:9081/actuator/health`。
 
 首次启动会由 Flyway 建立 `dc_` 平台表，并使用 `DATACRAFT_ADMIN_USERNAME` / `DATACRAFT_ADMIN_PASSWORD` 创建管理员。密码只以 BCrypt 哈希保存；数据源密码以 AES-256-GCM 密文保存，`DATACRAFT_DATASOURCE_ENCRYPTION_KEY` 解码后必须为 32 字节；缺少安全配置时应用会拒绝启动。
 
