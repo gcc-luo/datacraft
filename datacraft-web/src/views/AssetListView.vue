@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 import { listDatasources } from '../api/datasources'
 import { getDataset, listDatasets, syncDatasourceMetadata } from '../api/metadata'
 import PaginationBar from '../components/common/PaginationBar.vue'
@@ -16,7 +17,6 @@ const keyword = ref('')
 const loading = ref(true)
 const detailLoading = ref(false)
 const syncing = ref(false)
-const errorMessage = ref('')
 const notice = ref('')
 
 const selectedDatasource = computed(() => datasources.value.find((item) => item.id === selectedDatasourceId.value) || null)
@@ -75,13 +75,12 @@ async function loadDatasets(selectFirst = true) {
 
 async function loadPage() {
   loading.value = true
-  errorMessage.value = ''
   try {
     datasources.value = await listDatasources()
     selectedDatasourceId.value = datasources.value[0]?.id || null
     await loadDatasets()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据资产加载失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据资产加载失败')
   } finally {
     loading.value = false
   }
@@ -89,7 +88,6 @@ async function loadPage() {
 
 async function changeDatasource() {
   loading.value = true
-  errorMessage.value = ''
   selectedDatasetId.value = null
   detail.value = null
   datasetPagination.resetPage()
@@ -97,7 +95,7 @@ async function changeDatasource() {
   try {
     await loadDatasets()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据表加载失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据表加载失败')
   } finally {
     loading.value = false
   }
@@ -110,7 +108,7 @@ async function selectDataset(id: number) {
   try {
     detail.value = await getDataset(id)
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据表详情加载失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据表详情加载失败')
   } finally {
     detailLoading.value = false
   }
@@ -119,14 +117,13 @@ async function selectDataset(id: number) {
 async function syncMetadata() {
   if (selectedDatasourceId.value === null) return
   syncing.value = true
-  errorMessage.value = ''
   notice.value = ''
   try {
     const result = await syncDatasourceMetadata(selectedDatasourceId.value)
     await loadDatasets(true)
     notice.value = `已同步 ${result.datasetCount} 张表、${result.fieldCount} 个字段`
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '元数据同步失败'
+    ElMessage.error(error instanceof Error ? error.message : '元数据同步失败')
   } finally {
     syncing.value = false
   }
@@ -155,7 +152,6 @@ watch(keyword, () => {
     </div>
 
     <div v-if="notice" class="inline-notice">{{ notice }}</div>
-    <div v-if="errorMessage" class="inline-error">{{ errorMessage }}</div>
 
     <section class="asset-toolbar">
       <label>数据源<select v-model="selectedDatasourceId" data-testid="datasource-select" @change="changeDatasource"><option v-for="source in datasources" :key="source.id" :value="source.id">{{ source.name }} · {{ source.type === 'POSTGRESQL' ? 'PostgreSQL' : 'MySQL' }}</option></select></label>

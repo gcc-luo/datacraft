@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { deletePipeline, listPipelines } from '../api/pipelines'
 import PaginationBar from '../components/common/PaginationBar.vue'
@@ -9,17 +10,15 @@ import type { PipelineResponse, PipelineStatus } from '../types/pipeline'
 const router = useRouter()
 const rows = ref<PipelineResponse[]>([])
 const loading = ref(true)
-const errorMessage = ref('')
 const notice = ref('')
 const pagination = usePagination(rows)
 
 async function loadRows() {
   loading.value = true
-  errorMessage.value = ''
   try {
     rows.value = await listPipelines()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Pipeline 加载失败'
+    ElMessage.error(error instanceof Error ? error.message : 'Pipeline 加载失败')
   } finally {
     loading.value = false
   }
@@ -30,15 +29,14 @@ function startCreate() {
 }
 
 async function remove(row: PipelineResponse) {
-  if (!window.confirm(`确定删除 Pipeline“${row.name}”吗？`)) return
-  errorMessage.value = ''
+  if (!window.confirm(`确定删除 Pipeline"${row.name}"吗？`)) return
   notice.value = ''
   try {
     await deletePipeline(row.id)
     rows.value = rows.value.filter((item) => item.id !== row.id)
-    notice.value = 'Pipeline 已删除'
+    ElMessage.success('Pipeline 已删除')
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Pipeline 删除失败'
+    ElMessage.error(error instanceof Error ? error.message : 'Pipeline 删除失败')
   }
 }
 
@@ -61,7 +59,6 @@ onMounted(loadRows)
     </div>
 
     <div v-if="notice" class="inline-notice">{{ notice }}</div>
-    <div v-if="errorMessage" class="inline-error">{{ errorMessage }}</div>
 
     <section class="pipeline-list-card">
       <div v-if="loading" class="pipeline-empty">正在加载 Pipeline…</div>

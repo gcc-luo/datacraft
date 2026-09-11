@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { listDatasources } from '../api/datasources'
 import { listQualityResults, runQualityCheck } from '../api/quality'
 import PaginationBar from '../components/common/PaginationBar.vue'
@@ -14,20 +15,18 @@ const tableName = ref('')
 const fieldName = ref('')
 const loading = ref(true)
 const running = ref(false)
-const errorMessage = ref('')
 const notice = ref('')
 const pagination = usePagination(results)
 
 async function load() {
   loading.value = true
-  errorMessage.value = ''
   try {
     const [sourceRows, resultRows] = await Promise.all([listDatasources(), listQualityResults()])
     datasources.value = sourceRows
     selectedDatasourceId.value = selectedDatasourceId.value || sourceRows[0]?.id || null
     results.value = resultRows
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '质量结果加载失败'
+    ElMessage.error(error instanceof Error ? error.message : '质量结果加载失败')
   } finally {
     loading.value = false
   }
@@ -35,19 +34,18 @@ async function load() {
 
 async function submit() {
   if (!selectedDatasourceId.value || !tableName.value.trim() || !fieldName.value.trim()) {
-    errorMessage.value = '请选择数据源并填写表名、字段名'
+    ElMessage.warning('请选择数据源并填写表名、字段名')
     return
   }
   running.value = true
-  errorMessage.value = ''
   notice.value = ''
   try {
     const created = await runQualityCheck({ datasourceId: selectedDatasourceId.value, tableName: tableName.value.trim(), rules: [{ type: 'NULL_CHECK', field: fieldName.value.trim() }] })
     results.value = [...created, ...results.value]
     pagination.resetPage()
-    notice.value = '空值检查已完成'
+    ElMessage.success('空值检查已完成')
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '质量检查失败'
+    ElMessage.error(error instanceof Error ? error.message : '质量检查失败')
   } finally {
     running.value = false
   }
@@ -68,7 +66,6 @@ onMounted(load)
     </div>
 
     <div v-if="notice" class="inline-notice">{{ notice }}</div>
-    <div v-if="errorMessage" class="inline-error">{{ errorMessage }}</div>
 
     <section class="quality-run-card">
       <div class="quality-run-card__heading"><div><span>QUICK CHECK</span><h3>运行空值检查</h3></div><small>当前结果最多保留 1000 条异常样例</small></div>

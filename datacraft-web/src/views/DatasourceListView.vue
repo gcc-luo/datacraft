@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { createDatasource, deleteDatasource, listDatasources, testDatasource, updateDatasource } from '../api/datasources'
 import PaginationBar from '../components/common/PaginationBar.vue'
 import { usePagination } from '../composables/usePagination'
@@ -14,8 +15,6 @@ const formOpen = ref(false)
 const editingId = ref<number | null>(null)
 const testingId = ref<number | null>(null)
 const formTesting = ref(false)
-const errorMessage = ref('')
-const formErrorMessage = ref('')
 const notice = ref('')
 const rowTestResult = ref<DatasourceTestResponse | null>(null)
 const formTestResult = ref<DatasourceTestResponse | null>(null)
@@ -30,11 +29,10 @@ function emptyForm(): DatasourceForm {
 
 async function loadRows() {
   loading.value = true
-  errorMessage.value = ''
   try {
     rows.value = await listDatasources()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据源加载失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据源加载失败')
   } finally {
     loading.value = false
   }
@@ -45,7 +43,6 @@ function startCreate() {
   Object.assign(form, emptyForm())
   formTestResult.value = null
   testedFormSignature.value = ''
-  formErrorMessage.value = ''
   notice.value = ''
   formOpen.value = true
 }
@@ -64,7 +61,6 @@ function startEdit(row: DatasourceResponse) {
   })
   formTestResult.value = null
   testedFormSignature.value = ''
-  formErrorMessage.value = ''
   notice.value = ''
   formOpen.value = true
 }
@@ -76,21 +72,20 @@ function closeForm() {
 async function save() {
   if (!canSave.value) return
   saving.value = true
-  errorMessage.value = ''
   notice.value = ''
   const payload: DatasourceRequest = { ...form, password: form.password?.trim() || undefined }
   try {
     if (editingId.value === null) {
       await createDatasource(payload)
-      notice.value = '数据源已创建'
+      ElMessage.success('数据源已创建')
     } else {
       await updateDatasource(editingId.value, payload)
-      notice.value = '数据源已更新'
+      ElMessage.success('数据源已更新')
     }
     formOpen.value = false
     await loadRows()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据源保存失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据源保存失败')
   } finally {
     saving.value = false
   }
@@ -98,12 +93,11 @@ async function save() {
 
 async function testConnection(row: DatasourceResponse) {
   testingId.value = row.id
-  errorMessage.value = ''
   try {
     rowTestResult.value = await testDatasource(row.id)
     await loadRows()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '连接测试失败'
+    ElMessage.error(error instanceof Error ? error.message : '连接测试失败')
   } finally {
     testingId.value = null
   }
@@ -127,13 +121,17 @@ function invalidateConnectionTest() {
 async function testFormConnection() {
   if (!formElement.value?.reportValidity()) return
   formTesting.value = true
-  formErrorMessage.value = ''
   formTestResult.value = null
   try {
     formTestResult.value = await testDatasource(formPayload(), editingId.value ?? undefined)
-    if (formTestResult.value.success) testedFormSignature.value = formSignature()
+    if (formTestResult.value.success) {
+      testedFormSignature.value = formSignature()
+      ElMessage.success('连接测试成功')
+    } else {
+      ElMessage.error(formTestResult.value.message || '连接测试失败')
+    }
   } catch (error) {
-    formErrorMessage.value = error instanceof Error ? error.message : '连接测试失败'
+    ElMessage.error(error instanceof Error ? error.message : '连接测试失败')
     testedFormSignature.value = ''
   } finally {
     formTesting.value = false
@@ -143,14 +141,13 @@ async function testFormConnection() {
 const canSave = computed(() => formTestResult.value?.success === true && testedFormSignature.value === formSignature())
 
 async function remove(row: DatasourceResponse) {
-  if (!window.confirm(`确定删除数据源“${row.name}”吗？`)) return
-  errorMessage.value = ''
+  if (!window.confirm(`确定删除数据源"${row.name}"吗？`)) return
   try {
     await deleteDatasource(row.id)
-    notice.value = '数据源已删除'
+    ElMessage.success('数据源已删除')
     await loadRows()
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '数据源删除失败'
+    ElMessage.error(error instanceof Error ? error.message : '数据源删除失败')
   }
 }
 
@@ -177,7 +174,6 @@ onMounted(loadRows)
     </div>
 
     <div v-if="notice" class="inline-notice">{{ notice }}</div>
-    <div v-if="errorMessage" class="inline-error">{{ errorMessage }}</div>
 
     <section class="datasource-card">
       <div v-if="loading" class="datasource-empty">正在加载数据源…</div>
@@ -210,7 +206,7 @@ onMounted(loadRows)
     <div v-if="formOpen" class="datasource-modal" role="presentation" @click.self="closeForm" @keydown.esc="closeForm">
       <section class="datasource-modal__panel" role="dialog" aria-modal="true" aria-labelledby="datasource-modal-title" tabindex="-1">
         <div class="section-heading"><div><p class="datasource-modal__eyebrow">DATA SOURCE CONFIGURATION</p><h3 id="datasource-modal-title">{{ editingId === null ? '新建数据源' : '编辑数据源' }}</h3><p>填写连接信息，测试成功后才能保存。</p></div><button type="button" class="quiet-action" aria-label="关闭弹框" @click="closeForm">关闭</button></div>
-        <div v-if="formErrorMessage" class="inline-error">{{ formErrorMessage }}</div>
+
         <form ref="formElement" class="datasource-form" @input="invalidateConnectionTest" @change="invalidateConnectionTest" @submit.prevent="save">
         <label>名称<input v-model="form.name" name="name" required maxlength="100" placeholder="例如：客户库" /></label>
         <label>类型<select v-model="form.type" name="type"><option value="POSTGRESQL">PostgreSQL</option><option value="MYSQL">MySQL</option></select></label>

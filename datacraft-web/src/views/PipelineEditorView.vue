@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow } from '@vue-flow/core'
 import type { Connection } from '@vue-flow/core'
@@ -34,7 +35,6 @@ const selectedNodeId = ref<string | null>(null)
 const loading = ref(true)
 const saving = ref(false)
 const dirty = ref(false)
-const errorMessage = ref('')
 const notice = ref('')
 const inspectorOpen = ref(true)
 
@@ -54,7 +54,6 @@ function setPipelineFromResponse(response: { id: number; name: string; descripti
 
 async function loadEditor() {
   loading.value = true
-  errorMessage.value = ''
   try {
     const metadata = await listNodeTypes()
     nodeMetadata.value = metadata
@@ -69,7 +68,7 @@ async function loadEditor() {
     })
     edges.value = graph.edges
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '加载 Pipeline 失败'
+    ElMessage.error(error instanceof Error ? error.message : '加载 Pipeline 失败')
   } finally {
     loading.value = false
   }
@@ -138,21 +137,20 @@ function removeSelectedNode() {
 
 async function saveEditor() {
   if (!pipeline.name.trim()) {
-    errorMessage.value = 'Pipeline 名称不能为空'
+    ElMessage.warning('Pipeline 名称不能为空')
     return
   }
   saving.value = true
-  errorMessage.value = ''
   const creating = isNew.value
   try {
     const request = canvasToRequest(pipeline.name.trim(), pipeline.description, pipeline.status, pipeline.executionStrategy, nodes.value, edges.value)
     const response = creating ? await createPipeline(request) : await updatePipeline(pipelineId.value, request)
     setPipelineFromResponse(response)
     dirty.value = false
-    notice.value = '已保存'
+    ElMessage.success('已保存')
     if (creating) await router.replace({ name: 'pipeline-editor', params: { id: response.id } })
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '保存 Pipeline 失败'
+    ElMessage.error(error instanceof Error ? error.message : '保存 Pipeline 失败')
   } finally {
     saving.value = false
   }
@@ -166,9 +164,10 @@ async function removeEditor() {
   if (!window.confirm(`确认删除 Pipeline「${pipeline.name}」吗？`)) return
   try {
     await deletePipeline(pipelineId.value)
+    ElMessage.success('Pipeline 已删除')
     await router.push({ name: 'pipelines' })
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : '删除 Pipeline 失败'
+    ElMessage.error(error instanceof Error ? error.message : '删除 Pipeline 失败')
   }
 }
 
@@ -210,7 +209,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onInspectorKeydown))
         <button class="pipeline-editor__save" data-testid="save-pipeline" type="button" :disabled="saving || loading" @click="saveEditor">{{ saving ? '保存中…' : '保存' }}</button>
       </div>
     </header>
-    <div v-if="errorMessage" class="pipeline-editor__error" data-testid="editor-error">{{ errorMessage }}</div>
     <div v-if="notice" class="pipeline-editor__notice">{{ notice }}</div>
 
     <PipelinePalette :metadata="nodeMetadata" @drag-node="() => undefined" />

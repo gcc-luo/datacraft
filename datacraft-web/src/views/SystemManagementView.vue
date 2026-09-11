@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
 import { createMenu, createRole, createUser, listMenus, listRoles, listUsers, updateMenu, updateRole, updateUser } from '../api/system'
 import PaginationBar from '../components/common/PaginationBar.vue'
@@ -18,7 +19,6 @@ const roles = ref<AdminRoleResponse[]>([])
 const menus = ref<AdminMenuResponse[]>([])
 const loading = ref(true)
 const saving = ref(false)
-const errorMessage = ref('')
 const notice = ref('')
 const forbidden = ref(false)
 const userFormOpen = ref(false)
@@ -59,7 +59,6 @@ function messageOf(error: unknown, fallback: string) {
 
 async function load() {
   loading.value = true
-  errorMessage.value = ''
   forbidden.value = false
   try {
     const [userRows, roleRows, menuRows] = await Promise.all([listUsers(), listRoles(), listMenus()])
@@ -69,9 +68,9 @@ async function load() {
   } catch (error) {
     if (isForbidden(error)) {
       forbidden.value = true
-      errorMessage.value = '没有执行此操作的权限'
+      ElMessage.error('没有执行此操作的权限')
     } else {
-      errorMessage.value = messageOf(error, '系统管理数据加载失败')
+      ElMessage.error(messageOf(error, '系统管理数据加载失败'))
     }
   } finally {
     loading.value = false
@@ -128,17 +127,16 @@ function startEditMenu(row: AdminMenuResponse) {
 
 async function submitUser() {
   saving.value = true
-  errorMessage.value = ''
   notice.value = ''
   try {
     const request = { ...userForm, password: userForm.password?.trim() || undefined, roleCodes: [...userForm.roleCodes] }
     if (editingUserId.value === null) await createUser(request)
     else await updateUser(editingUserId.value, request)
-    notice.value = editingUserId.value === null ? '用户已创建' : '用户已更新'
+    ElMessage.success(editingUserId.value === null ? '用户已创建' : '用户已更新')
     closeForms()
     await load()
   } catch (error) {
-    errorMessage.value = isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '用户保存失败')
+    ElMessage.error(isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '用户保存失败'))
   } finally {
     saving.value = false
   }
@@ -146,17 +144,16 @@ async function submitUser() {
 
 async function submitRole() {
   saving.value = true
-  errorMessage.value = ''
   notice.value = ''
   try {
     const request = { ...roleForm, menuIds: [...roleForm.menuIds] }
     if (editingRoleId.value === null) await createRole(request)
     else await updateRole(editingRoleId.value, request)
-    notice.value = editingRoleId.value === null ? '角色已创建' : '角色权限已更新'
+    ElMessage.success(editingRoleId.value === null ? '角色已创建' : '角色权限已更新')
     closeForms()
     await load()
   } catch (error) {
-    errorMessage.value = isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '角色保存失败')
+    ElMessage.error(isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '角色保存失败'))
   } finally {
     saving.value = false
   }
@@ -164,17 +161,16 @@ async function submitRole() {
 
 async function submitMenu() {
   saving.value = true
-  errorMessage.value = ''
   notice.value = ''
   try {
     const request = { ...menuForm, icon: menuForm.icon?.trim() || undefined }
     if (editingMenuId.value === null) await createMenu(request)
     else await updateMenu(editingMenuId.value, request)
-    notice.value = editingMenuId.value === null ? '菜单已创建' : '菜单已更新'
+    ElMessage.success(editingMenuId.value === null ? '菜单已创建' : '菜单已更新')
     closeForms()
     await load()
   } catch (error) {
-    errorMessage.value = isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '菜单保存失败')
+    ElMessage.error(isForbidden(error) ? '没有执行此操作的权限' : messageOf(error, '菜单保存失败'))
   } finally {
     saving.value = false
   }
@@ -190,7 +186,6 @@ onMounted(load)
 <template>
   <div class="system-page">
     <div v-if="notice" class="inline-notice">{{ notice }}</div>
-    <div v-if="errorMessage" class="inline-error">{{ errorMessage }}</div>
 
     <section v-if="loading" class="system-empty">正在加载系统管理数据…</section>
     <section v-else-if="forbidden" class="system-empty system-empty--forbidden"><strong>暂无访问权限</strong><span>只有管理员角色可以配置系统用户、角色和菜单。</span></section>
